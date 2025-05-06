@@ -15,6 +15,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	public CustomUserDetailsService(UserRepository userRepository) {
 		this.userRepository = userRepository;
 	}
+	
 	@Override
 	public UserDetails loadUserByUsername(String gmail) throws UserNotFoundException {
 		// TODO Auto-generated method stub
