@@ -19,6 +19,7 @@ public class JwtHelper {
 
 	
 	private static final long JWT_TOKEN_VALIDITY = 60 * 60;
+	
     @Value("${jwt.secretKey}")
     private String secret;
 

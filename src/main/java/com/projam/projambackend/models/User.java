@@ -1,5 +1,6 @@
 package com.projam.projambackend.models;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -45,6 +46,12 @@ public class User implements UserDetails{
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Enumerated(EnumType.STRING)
 	private Set<Role> roles;
+	
+	@Column(name = "otp_generated_time", nullable = false)
+	private LocalDateTime otpGeneratedTime;
+	
+	@Column(name = "is_verified", nullable = false)
+	private boolean isVerified = false;
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -111,6 +118,23 @@ public class User implements UserDetails{
 	public void setPassword(String password) {
 		this.password = password;
 	}
+
+	public LocalDateTime getOtpGeneratedTime() {
+		return otpGeneratedTime;
+	}
+
+	public void setOtpGeneratedTime(LocalDateTime otpGeneratedTime) {
+		this.otpGeneratedTime = otpGeneratedTime;
+	}
+
+	public boolean isVerified() {
+		return isVerified;
+	}
+
+	public void setVerified(boolean isVerified) {
+		this.isVerified = isVerified;
+	}
+	
 	
 	
 	

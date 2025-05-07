@@ -4,14 +4,17 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projam.projambackend.dto.LoginRequest;
+import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
+import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.services.AuthenticationService;
 
 @RestController
-@RequestMapping("/projam")
+@RequestMapping("/projam/auth")
 public class AuthenticationController {
 
 	private AuthenticationService authenticationService;
@@ -25,8 +28,18 @@ public class AuthenticationController {
 		return ResponseEntity.ok(authenticationService.login(loginRequest));
 	}
 	
+	@PostMapping("/verify/gmail")
+	public ResponseEntity<?> verifyOtp(@RequestBody VerifyRequest verifyRequest){
+		return ResponseEntity.ok(authenticationService.verifyOtp(verifyRequest));
+	}
+	
 	@PostMapping("/signup")
 	public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest){
 		return ResponseEntity.ok(authenticationService.signup(signupRequest));
+	}
+	
+	@PostMapping("/resend/otp")
+	public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest resendOtpRequest){
+		return ResponseEntity.ok(authenticationService.resendOtp(resendOtpRequest));
 	}
 }
