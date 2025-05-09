@@ -1,17 +1,17 @@
 package com.projam.projambackend.dto;
 
-public class LoginResponse {
+public class RefreshTokenRequest {
 
-	private String token;
+	private String gmail;
 	
 	private String refreshToken;
 
-	public String getToken() {
-		return token;
+	public String getGmail() {
+		return gmail;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
+	public void setGmail(String gmail) {
+		this.gmail = gmail;
 	}
 
 	public String getRefreshToken() {
@@ -21,8 +21,6 @@ public class LoginResponse {
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
-	
-	
 	
 	
 }

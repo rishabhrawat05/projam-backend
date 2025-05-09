@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projam.projambackend.dto.LoginRequest;
+import com.projam.projambackend.dto.RefreshTokenRequest;
 import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
 import com.projam.projambackend.dto.VerifyRequest;
@@ -41,5 +42,10 @@ public class AuthenticationController {
 	@PostMapping("/resend/otp")
 	public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest resendOtpRequest){
 		return ResponseEntity.ok(authenticationService.resendOtp(resendOtpRequest));
+	}
+	
+	@PostMapping("/refreshtoken/generate")
+	public ResponseEntity<?> generateRefreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest){
+		return ResponseEntity.ok(authenticationService.generateRefreshToken(refreshTokenRequest));
 	}
 }

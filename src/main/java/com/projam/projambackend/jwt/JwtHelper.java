@@ -49,4 +49,14 @@ public class JwtHelper {
                 .signWith(new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS512.getJcaName()), SignatureAlgorithm.HS512)
                 .compact();
     }
+    
+    public String generateRefreshToken(UserDetails userDetails) {
+        return Jwts.builder()
+            .setSubject(userDetails.getUsername())
+            .setIssuedAt(new Date(System.currentTimeMillis()))
+            .setExpiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60 * 24 * 7))
+            .signWith(new SecretKeySpec(secret.getBytes(), SignatureAlgorithm.HS512.getJcaName()), SignatureAlgorithm.HS512)
+            .compact();
+    }
+
 }

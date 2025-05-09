@@ -16,12 +16,15 @@ import org.springframework.stereotype.Service;
 import com.projam.projambackend.config.PasswordEncoder;
 import com.projam.projambackend.dto.LoginRequest;
 import com.projam.projambackend.dto.LoginResponse;
+import com.projam.projambackend.dto.RefreshTokenRequest;
+import com.projam.projambackend.dto.RefreshTokenResponse;
 import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
 import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.email.EmailUtility;
 import com.projam.projambackend.enums.Role;
 import com.projam.projambackend.exceptions.EmailNotVerifiedException;
+import com.projam.projambackend.exceptions.RefreshTokenExpiredException;
 import com.projam.projambackend.exceptions.UserAlreadyExistsByGmailException;
 import com.projam.projambackend.exceptions.UserNotFoundException;
 import com.projam.projambackend.jwt.JwtHelper;
@@ -61,8 +64,12 @@ public class AuthenticationService {
 		}
 		UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getGmail());
 		String token = jwtHelper.generateToken(userDetails);
+		String refreshToken = jwtHelper.generateRefreshToken(userDetails);
+		user.setRefreshToken(refreshToken);
+		userRepository.save(user);
 		LoginResponse loginResponse = new LoginResponse();
 		loginResponse.setToken(token);
+		loginResponse.setRefreshToken(refreshToken);
 		return loginResponse;
 	}
 
@@ -132,6 +139,28 @@ public class AuthenticationService {
 		}
 		else {
 			throw new EmailNotVerifiedException("Email Not Verified By the User");
+		}
+	}
+	
+	public RefreshTokenResponse generateRefreshToken(RefreshTokenRequest refreshTokenRequest) {
+		Optional<User> optUser = userRepository.findByGmail(refreshTokenRequest.getGmail());
+		if(optUser.isEmpty()) {
+			throw new UserNotFoundException("User Not Found with the Gmail Provided.");
+		}
+		User user = optUser.get();
+		if(user.getGmail().equals(refreshTokenRequest.getGmail()) && user.isVerified() && user.getRefreshToken().equals(refreshTokenRequest.getRefreshToken())) {
+			if(!jwtHelper.isTokenExpired(refreshTokenRequest.getRefreshToken())) {
+				RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse();
+				UserDetails userDetails = userDetailsService.loadUserByUsername(user.getGmail());
+				refreshTokenResponse.setToken(jwtHelper.generateToken(userDetails));
+				return refreshTokenResponse;
+			}
+			else {
+				throw new RefreshTokenExpiredException("Refresh Token Expired!!");
+			}
+		}
+		else {
+			throw new UserNotFoundException("User does not have vaild mail or user is not verified or user refresh token is not correct(Please login again)");
 		}
 	}
 
