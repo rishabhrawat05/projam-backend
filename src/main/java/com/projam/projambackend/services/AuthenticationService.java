@@ -22,13 +22,14 @@ import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
 import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.email.EmailUtility;
-import com.projam.projambackend.enums.Role;
 import com.projam.projambackend.exceptions.EmailNotVerifiedException;
 import com.projam.projambackend.exceptions.RefreshTokenExpiredException;
 import com.projam.projambackend.exceptions.UserAlreadyExistsByGmailException;
 import com.projam.projambackend.exceptions.UserNotFoundException;
 import com.projam.projambackend.jwt.JwtHelper;
+import com.projam.projambackend.models.Role;
 import com.projam.projambackend.models.User;
+import com.projam.projambackend.repositories.RoleRepository;
 import com.projam.projambackend.repositories.UserRepository;
 
 @Service
@@ -45,15 +46,18 @@ public class AuthenticationService {
 	private final EmailUtility emailUtility;
 	
 	private final PasswordEncoder passwordEncoder;
+	
+	private final RoleRepository roleRepository;
 
 	public AuthenticationService(UserRepository userRepository, AuthenticationManager authenticationManager,
-			UserDetailsService userDetailsService, JwtHelper jwtHelper, EmailUtility emailUtility, PasswordEncoder passwordEncoder) {
+			UserDetailsService userDetailsService, JwtHelper jwtHelper, EmailUtility emailUtility, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
 		this.userRepository = userRepository;
 		this.authenticationManager = authenticationManager;
 		this.jwtHelper = jwtHelper;
 		this.userDetailsService = userDetailsService;
 		this.emailUtility = emailUtility;
 		this.passwordEncoder = passwordEncoder;
+		this.roleRepository = roleRepository;
 	}
 
 	public LoginResponse login(LoginRequest loginRequest) {
@@ -92,7 +96,9 @@ public class AuthenticationService {
 		String encodedPassword = passwordEncoder.bCryptPasswordEncoder().encode(signupRequest.getPassword());
 		String otp = generateOtp();
 		Set<Role> roleSet = new HashSet<>();
-		roleSet.add(Role.FREE);
+		Role role = new Role("FREE");
+		
+		roleSet.add(role);
 		User user = new User();
 		user.setUsername(signupRequest.getUsername());
 		user.setGmail(signupRequest.getGmail());
@@ -101,6 +107,7 @@ public class AuthenticationService {
 		user.setRoles(roleSet);
 		user.setVerified(false);
 		user.setOtpGeneratedTime(LocalDateTime.now());
+		roleRepository.save(role);
 		userRepository.save(user);
 		emailUtility.sendEmail(signupRequest.getGmail(), "Otp Verification for ProJam", "Otp for Verification is:" + otp);
 		return "User Signup Successfull";
