@@ -2,6 +2,7 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.security.core.GrantedAuthority;
@@ -46,6 +47,12 @@ public class User implements UserDetails{
 	
 	@Column(name = "otp")
 	private String otp;
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+	@JoinTable(name = "user_workspaces",
+			joinColumns = @JoinColumn(name = "user_id"),
+			inverseJoinColumns = @JoinColumn(name = "workspace_id"))
+	private Set<Workspace> workspaces = new HashSet<>();
 	
 	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(
@@ -142,8 +149,24 @@ public class User implements UserDetails{
 	public void setVerified(boolean isVerified) {
 		this.isVerified = isVerified;
 	}
+
+	public Set<Workspace> getWorkspaces() {
+		return workspaces;
+	}
+
+	public void setWorkspaces(Set<Workspace> workspaces) {
+		this.workspaces = workspaces;
+	}
 	
+	public void addWorkspace(Workspace workspace) {
+		this.workspaces.add(workspace);
+	}
 	
+	public void deleteWorkspace(Workspace workspace) {
+		if(this.workspaces.contains(workspace)) {
+			this.workspaces.remove(workspace);
+		}
+	}
 	
 	
 	
