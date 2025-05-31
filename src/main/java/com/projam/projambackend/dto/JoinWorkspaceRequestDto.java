@@ -1,6 +1,6 @@
 package com.projam.projambackend.dto;
 
-public class JoinWorkspaceRequest {
+public class JoinWorkspaceRequestDto {
 
 	private String gmail;
 	

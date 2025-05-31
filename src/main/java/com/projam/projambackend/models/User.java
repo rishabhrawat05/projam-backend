@@ -22,6 +22,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -48,7 +49,7 @@ public class User implements UserDetails{
 	@Column(name = "otp")
 	private String otp;
 	
-	@ManyToMany(fetch = FetchType.EAGER)
+	@ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(name = "user_workspaces",
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "workspace_id"))
@@ -68,6 +69,9 @@ public class User implements UserDetails{
 	@Column(name = "is_verified", nullable = false)
 	private boolean isVerified = false;
 
+	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	private Set<JoinWorkspaceRequest> joinRequests = new HashSet<>();
+	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		// TODO Auto-generated method stub
@@ -83,7 +87,7 @@ public class User implements UserDetails{
 	@Override
 	public String getUsername() {
 		// TODO Auto-generated method stub
-		return this.username;
+		return this.gmail;
 	}
 
 	public Long getUserId() {
@@ -160,15 +164,31 @@ public class User implements UserDetails{
 	
 	public void addWorkspace(Workspace workspace) {
 		this.workspaces.add(workspace);
+		workspace.getUsers().add(this);
 	}
 	
 	public void deleteWorkspace(Workspace workspace) {
 		if(this.workspaces.contains(workspace)) {
 			this.workspaces.remove(workspace);
+			workspace.getUsers().remove(this);
 		}
 	}
+
+	public Set<JoinWorkspaceRequest> getJoinRequests() {
+		return joinRequests;
+	}
+
+	public void setJoinRequests(Set<JoinWorkspaceRequest> joinRequests) {
+		this.joinRequests = joinRequests;
+	}
 	
-	
-	
-	
+	public void addRequest(JoinWorkspaceRequest request) {
+	    joinRequests.add(request);
+	    request.setUser(this);
+	}
+
+	public void removeRequest(JoinWorkspaceRequest request) {
+	    joinRequests.remove(request);
+	    request.setUser(null);
+	}
 }

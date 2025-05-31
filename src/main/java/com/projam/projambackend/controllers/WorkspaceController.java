@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.projam.projambackend.dto.JoinWorkspaceRequest;
+import com.projam.projambackend.dto.JoinWorkspaceRequestDto;
 import com.projam.projambackend.dto.WorkspaceRequest;
 import com.projam.projambackend.services.WorkspaceService;
 
@@ -51,8 +51,8 @@ public class WorkspaceController {
 	}
 	
 	@PostMapping("/join/workspace")
-	public ResponseEntity<?> joinWorkspace(@RequestBody JoinWorkspaceRequest joinWorkspaceRequest){
-		return ResponseEntity.ok(workspaceService.joinWorkspace(joinWorkspaceRequest));
+	public ResponseEntity<?> joinWorkspace(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
+		return ResponseEntity.ok(workspaceService.joinWorkspace(joinWorkspaceRequestDto));
 	}
 	
 	@GetMapping("/join/workspace/{token}")

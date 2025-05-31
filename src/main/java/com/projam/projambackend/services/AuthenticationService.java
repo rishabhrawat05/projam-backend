@@ -39,7 +39,7 @@ public class AuthenticationService {
 
 	private final AuthenticationManager authenticationManager;
 
-	private final UserDetailsService userDetailsService;
+	private final CustomUserDetailsService userDetailsService;
 
 	private final JwtHelper jwtHelper;
 	
@@ -50,7 +50,7 @@ public class AuthenticationService {
 	private final RoleRepository roleRepository;
 
 	public AuthenticationService(UserRepository userRepository, AuthenticationManager authenticationManager,
-			UserDetailsService userDetailsService, JwtHelper jwtHelper, EmailUtility emailUtility, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
+			CustomUserDetailsService userDetailsService, JwtHelper jwtHelper, EmailUtility emailUtility, PasswordEncoder passwordEncoder, RoleRepository roleRepository) {
 		this.userRepository = userRepository;
 		this.authenticationManager = authenticationManager;
 		this.jwtHelper = jwtHelper;
@@ -100,7 +100,7 @@ public class AuthenticationService {
 		
 		roleSet.add(role);
 		User user = new User();
-		user.setUsername(signupRequest.getUsername());
+		user.setUsername(signupRequest.getGmail());
 		user.setGmail(signupRequest.getGmail());
 		user.setPassword(encodedPassword);
 		user.setOtp(otp);
