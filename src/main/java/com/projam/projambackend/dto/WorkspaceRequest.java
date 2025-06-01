@@ -17,6 +17,8 @@ public class WorkspaceRequest {
 	private Boolean isAllowedInvites;
 	
 	private String workspaceRole;
+	
+	private Boolean isPrivate;
 
 	private Set<User> users = new HashSet<>();
 
@@ -79,5 +81,15 @@ public class WorkspaceRequest {
 	public void setAdminGmail(String adminGmail) {
 		this.adminGmail = adminGmail;
 	}
+
+	public Boolean getIsPrivate() {
+		return isPrivate;
+	}
+
+	public void setIsPrivate(Boolean isPrivate) {
+		this.isPrivate = isPrivate;
+	}
+	
+	
 	
 }

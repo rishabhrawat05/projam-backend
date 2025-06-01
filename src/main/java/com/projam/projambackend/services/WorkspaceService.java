@@ -12,6 +12,7 @@ import com.projam.projambackend.dto.JoinWorkspaceRequestDto;
 import com.projam.projambackend.dto.WorkspaceRequest;
 import com.projam.projambackend.dto.WorkspaceResponse;
 import com.projam.projambackend.email.EmailUtility;
+import com.projam.projambackend.exceptions.JoinWorkspaceRequestAlreadyExistException;
 import com.projam.projambackend.exceptions.JoinWorkspaceRequestNotFound;
 import com.projam.projambackend.exceptions.JoinWorkspaceTokenAlreadyUsedException;
 import com.projam.projambackend.exceptions.JoinWorkspaceTokenExpiredException;
@@ -64,6 +65,7 @@ public class WorkspaceService {
 		newWorkspace.setOrganizationName(workspaceRequest.getOrganizationName());
 		newWorkspace.setWorkspaceType(workspaceRequest.getWorkspaceType());
 		newWorkspace.setUsers(workspaceRequest.getUsers());
+		newWorkspace.setIsPrivate(workspaceRequest.getIsPrivate());
 		newWorkspace.addUser(user);
 		newWorkspace.setAdminGmail(workspaceRequest.getAdminGmail());
 		String slug = generateWorkspaceSlug(workspaceRequest.getWorkspaceName());
@@ -71,6 +73,12 @@ public class WorkspaceService {
 		int counter = 1;
 		while (workspaceRepository.findByWorkspaceSlug(slug).isPresent()) {
 			uniqueSlug = slug + "-" + counter++;
+		}
+		if(!newWorkspace.getIsPrivate()) {
+			newWorkspace.setJoinCode(newWorkspace.generateJoinCode());
+		}
+		else {
+			newWorkspace.setJoinCode(null);
 		}
 		newWorkspace.setWorkspaceSlug(uniqueSlug);
 		newWorkspace.setWorkspaceRole("ADMIN");
@@ -182,7 +190,15 @@ public class WorkspaceService {
 		if (!workspace.getIsAllowedInvites()) {
 			throw new WorkspaceInviteNotAllowedException("Sorry but the workspace not allow invites");
 		}
+		
+		if(workspace.getIsPrivate()) {
+			throw new WorkspaceNotFoundException("Workspace is private.");
+		}
+		
 		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		if(joinWorkspaceRequestRepository.findByUser(user).isPresent()) {
+			throw new JoinWorkspaceRequestAlreadyExistException("Join Workspace Request Already Exists");
+		}
 		JoinWorkspaceRequest joinWorkspaceRequest = new JoinWorkspaceRequest();
 		joinWorkspaceRequest.setRequestTime(LocalDateTime.now());
 		joinWorkspaceRequest.setStatus("PENDING");
@@ -301,6 +317,17 @@ public class WorkspaceService {
 		String inviteLink = createInviteJoinLink(workspace, gmail);
 		emailUtility.sendEmail(user.getGmail(), "You are invited to Join Workspace " + workspace.getWorkspaceName(), "Join the workspace within 2 days from now via:" + inviteLink);
 		return "Workspace Invite Link has been sent to the Member";
+	}
+	
+	@Transactional
+	public String joinWorkspaceWithJoinCode(JoinWorkspaceRequestDto joinWorkspaceRequestDto) {
+		Workspace workspace = workspaceRepository.findByJoinCode(joinWorkspaceRequestDto.getJoinCode()).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found with the join code"));
+		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		workspace.addUser(user);
+		workspaceRepository.save(workspace);
+		user.addWorkspace(workspace);
+		userRepository.save(user);
+		return "User have joined the workspace";
 	}
 	
 }

@@ -1,6 +1,7 @@
 package com.projam.projambackend.controllers;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,18 +46,34 @@ public class WorkspaceController {
 		return ResponseEntity.ok(workspaceService.getAllWorkspaces());
 	}
 	
+	@PreAuthorize(value = "hasRole('ADMIN')")
 	@GetMapping("/workspace")
 	public ResponseEntity<?> getWorkspaceById(@RequestParam Long workspaceId){
 		return ResponseEntity.ok(workspaceService.getWorkspaceById(workspaceId));
 	}
 	
-	@PostMapping("/join/workspace")
-	public ResponseEntity<?> joinWorkspace(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
+	@PostMapping("/join/workspace/slug")
+	public ResponseEntity<?> joinWorkspaceWithSlug(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
 		return ResponseEntity.ok(workspaceService.joinWorkspace(joinWorkspaceRequestDto));
 	}
 	
 	@GetMapping("/join/workspace/{token}")
 	public ResponseEntity<?> joinWorkspaceWithInviteLink(@PathVariable String token){
 		return ResponseEntity.ok(workspaceService.joinWorkspaceWithInviteLink(token));
+	}
+	
+	@GetMapping("/accept/request")
+	public ResponseEntity<?> acceptSingleJoinRequest(@RequestParam Long requestId){
+		return ResponseEntity.ok(workspaceService.acceptSingleJoinRequest(requestId));
+	}
+	
+	@GetMapping("/accept/all/request")
+	public ResponseEntity<?> acceptAllJoinRequest(@RequestParam Long workspaceId){
+		return ResponseEntity.ok(workspaceService.acceptAllJoinRequest(workspaceId));
+	}
+	
+	@PostMapping("/join/workspace/joincode")
+	public ResponseEntity<?> joinWorkspaceWithJoinCode(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
+		return ResponseEntity.ok(workspaceService.joinWorkspaceWithJoinCode(joinWorkspaceRequestDto));
 	}
 }

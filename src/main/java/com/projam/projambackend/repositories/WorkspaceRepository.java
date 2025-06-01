@@ -14,5 +14,5 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 	
 	Optional<Workspace> findByWorkspaceSlug(String workspaceSlug);
 	
-	
+	Optional<Workspace> findByJoinCode(String joinCode);
 }

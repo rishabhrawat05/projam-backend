@@ -2,6 +2,7 @@ package com.projam.projambackend.models;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,6 +44,12 @@ public class Workspace {
 	
 	@Column(name = "workspace_role")
 	private String workspaceRole;
+	
+	@Column(name = "is_private")
+	private Boolean isPrivate;
+	
+	@Column(name = "join_code", unique = true)
+	private String joinCode;
 	
 	@ManyToMany(mappedBy = "workspaces")
 	private Set<User> users = new HashSet<>();
@@ -148,5 +155,25 @@ public class Workspace {
 	public void removeRequest(JoinWorkspaceRequest request) {
 	    requests.remove(request);
 	    request.setWorkspace(null);
+	}
+
+	public Boolean getIsPrivate() {
+		return isPrivate;
+	}
+
+	public void setIsPrivate(Boolean isPrivate) {
+		this.isPrivate = isPrivate;
+	}
+
+	public String getJoinCode() {
+		return joinCode;
+	}
+
+	public void setJoinCode(String joinCode) {
+		this.joinCode = joinCode;
+	}
+	
+	public String generateJoinCode() {
+		return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6).toUpperCase();
 	}
 }
