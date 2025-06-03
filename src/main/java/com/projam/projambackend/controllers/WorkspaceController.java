@@ -1,5 +1,6 @@
 package com.projam.projambackend.controllers;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,59 +22,76 @@ import com.projam.projambackend.services.WorkspaceService;
 public class WorkspaceController {
 
 	private final WorkspaceService workspaceService;
-	
+
 	public WorkspaceController(WorkspaceService workspaceService) {
 		this.workspaceService = workspaceService;
 	}
-	
+
 	@PostMapping("/create/workspace")
-	public ResponseEntity<?> createWorkspace(@RequestBody WorkspaceRequest workspaceRequest){
+	public ResponseEntity<?> createWorkspace(@RequestBody WorkspaceRequest workspaceRequest) {
 		return ResponseEntity.ok(workspaceService.createWorkspace(workspaceRequest));
 	}
-	
+
 	@PutMapping("/update/workspace")
-	public ResponseEntity<?> updateWorkspace(@RequestBody WorkspaceRequest workspaceRequest, @RequestParam Long workspaceId){
+	public ResponseEntity<?> updateWorkspace(@RequestBody WorkspaceRequest workspaceRequest,
+			@RequestParam Long workspaceId) {
 		return ResponseEntity.ok(workspaceService.updateWorkspace(workspaceRequest, workspaceId));
 	}
-	
+
 	@DeleteMapping("/delete/workspace")
-	public ResponseEntity<?> deleteWorkspace(@RequestParam Long workspaceId){
+	public ResponseEntity<?> deleteWorkspace(@RequestParam Long workspaceId) {
 		return ResponseEntity.ok(workspaceService.deleteWorkspaceById(workspaceId));
 	}
-	
+
 	@GetMapping("/allworkspaces")
-	public ResponseEntity<?> getAllWorkspaces(){
+	public ResponseEntity<?> getAllWorkspaces() {
 		return ResponseEntity.ok(workspaceService.getAllWorkspaces());
 	}
-	
+
 	@PreAuthorize(value = "hasRole('ADMIN')")
 	@GetMapping("/workspace")
-	public ResponseEntity<?> getWorkspaceById(@RequestParam Long workspaceId){
+	public ResponseEntity<?> getWorkspaceById(@RequestParam Long workspaceId) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceById(workspaceId));
 	}
-	
+
 	@PostMapping("/join/workspace/slug")
-	public ResponseEntity<?> joinWorkspaceWithSlug(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
+	public ResponseEntity<?> joinWorkspaceWithSlug(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto) {
 		return ResponseEntity.ok(workspaceService.joinWorkspace(joinWorkspaceRequestDto));
 	}
-	
+
 	@GetMapping("/join/workspace/{token}")
-	public ResponseEntity<?> joinWorkspaceWithInviteLink(@PathVariable String token){
+	public ResponseEntity<?> joinWorkspaceWithInviteLink(@PathVariable String token) {
 		return ResponseEntity.ok(workspaceService.joinWorkspaceWithInviteLink(token));
 	}
-	
+
 	@GetMapping("/accept/request")
-	public ResponseEntity<?> acceptSingleJoinRequest(@RequestParam Long requestId){
+	public ResponseEntity<?> acceptSingleJoinRequest(@RequestParam Long requestId) {
 		return ResponseEntity.ok(workspaceService.acceptSingleJoinRequest(requestId));
 	}
-	
+
 	@GetMapping("/accept/all/request")
-	public ResponseEntity<?> acceptAllJoinRequest(@RequestParam Long workspaceId){
+	public ResponseEntity<?> acceptAllJoinRequest(@RequestParam Long workspaceId) {
 		return ResponseEntity.ok(workspaceService.acceptAllJoinRequest(workspaceId));
 	}
-	
+
 	@PostMapping("/join/workspace/joincode")
-	public ResponseEntity<?> joinWorkspaceWithJoinCode(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto){
+	public ResponseEntity<?> joinWorkspaceWithJoinCode(@RequestBody JoinWorkspaceRequestDto joinWorkspaceRequestDto) {
 		return ResponseEntity.ok(workspaceService.joinWorkspaceWithJoinCode(joinWorkspaceRequestDto));
+	}
+
+	@GetMapping("/all/workspaces")
+	public Page<?> getAllWorkspacesByUser(
+			@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size, 
+			@RequestParam String gmail) {
+		return workspaceService.getAllWorkspacesSummaryByUser(page, size, gmail);
+
+	}
+	
+	@GetMapping("/search")
+	public Page<?> searchWorkspaceByKeyword(@RequestParam(defaultValue = "0") int page,
+			@RequestParam(defaultValue = "5") int size, 
+			@RequestParam String keyword){
+		return workspaceService.searchWorkspaceByKeyword(page,size,keyword);
 	}
 }

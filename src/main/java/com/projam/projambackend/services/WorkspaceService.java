@@ -1,16 +1,24 @@
 package com.projam.projambackend.services;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.projam.projambackend.dto.JoinWorkspaceRequestDto;
+import com.projam.projambackend.dto.JoinWorkspaceRequestResponse;
+import com.projam.projambackend.dto.UserResponse;
 import com.projam.projambackend.dto.WorkspaceRequest;
 import com.projam.projambackend.dto.WorkspaceResponse;
+import com.projam.projambackend.dto.WorkspaceSummaryDto;
 import com.projam.projambackend.email.EmailUtility;
 import com.projam.projambackend.exceptions.JoinWorkspaceRequestAlreadyExistException;
 import com.projam.projambackend.exceptions.JoinWorkspaceRequestNotFound;
@@ -139,12 +147,30 @@ public class WorkspaceService {
 	public WorkspaceResponse workspaceToWorkspaceResponse(Workspace workspace) {
 		WorkspaceResponse workspaceResponse = new WorkspaceResponse();
 		workspaceResponse.setOrganizationName(workspace.getOrganizationName());
-		workspaceResponse.setUsers(workspace.getUsers());
+		Set<UserResponse> userResponse = workspace.getUsers().stream().map(user -> {
+			UserResponse ur = new UserResponse();
+			ur.setGmail(user.getGmail());
+			ur.setRoles(user.getRoles());
+			ur.setUsername(user.getUsername());
+			ur.setVerified(user.isVerified());
+			return ur;
+		}).collect(Collectors.toSet());
+		workspaceResponse.setUsers(userResponse);
 		workspaceResponse.setWorkspaceName(workspace.getWorkspaceName());
 		workspaceResponse.setWorkspaceType(workspace.getWorkspaceType());
 		workspaceResponse.setAdminGmail(workspace.getAdminGmail());
 		workspaceResponse.setIsAllowedInvites(workspace.getIsAllowedInvites());
 		workspaceResponse.setWorkspaceRole(workspace.getWorkspaceRole());
+		workspaceResponse.setWorkspaceType(workspace.getWorkspaceType());
+		workspaceResponse.setJoinCode(workspace.getJoinCode());
+		workspaceResponse.setIsPrivate(workspace.getIsPrivate());
+		Set<JoinWorkspaceRequestResponse> joinWorkspaceRequestResponses = workspace.getRequests().stream().map(request -> {
+			JoinWorkspaceRequestResponse jr = new JoinWorkspaceRequestResponse();
+			jr.setRequestTime(request.getRequestTime());
+			jr.setStatus(request.getStatus());
+			return jr;
+		}).collect(Collectors.toSet());
+		workspaceResponse.setRequests(joinWorkspaceRequestResponses);
 		if (workspace.getWorkspaceSlug() != null) {
 			workspaceResponse.setWorkspaceSlug(workspace.getWorkspaceSlug());
 		}
@@ -328,6 +354,18 @@ public class WorkspaceService {
 		user.addWorkspace(workspace);
 		userRepository.save(user);
 		return "User have joined the workspace";
+	}
+	
+	public Page<WorkspaceSummaryDto> getAllWorkspacesSummaryByUser(int page, int size, String gmail){
+		Pageable pageable = PageRequest.of(page, size);
+		User user = userRepository.findByGmail(gmail).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		return workspaceRepository.findAllWorkspaceSummariesByUserGmail(gmail, pageable);
+		
+	}
+	
+	public Page<WorkspaceSummaryDto> searchWorkspaceByKeyword(int page, int size, String keyword){
+		Pageable pageable = PageRequest.of(page, size);
+		return workspaceRepository.findAllWorkspaceSummaryByKeyword(keyword, pageable);
 	}
 	
 }

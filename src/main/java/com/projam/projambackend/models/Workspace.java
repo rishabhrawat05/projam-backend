@@ -4,6 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -52,6 +54,7 @@ public class Workspace {
 	private String joinCode;
 	
 	@ManyToMany(mappedBy = "workspaces")
+	@JsonManagedReference
 	private Set<User> users = new HashSet<>();
 	
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -176,4 +179,6 @@ public class Workspace {
 	public String generateJoinCode() {
 		return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6).toUpperCase();
 	}
+	
+	
 }

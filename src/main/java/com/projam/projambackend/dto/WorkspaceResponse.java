@@ -3,6 +3,7 @@ package com.projam.projambackend.dto;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.projam.projambackend.models.JoinWorkspaceRequest;
 import com.projam.projambackend.models.User;
 
 public class WorkspaceResponse {
@@ -15,14 +16,20 @@ public class WorkspaceResponse {
 
 	private String organizationName;
 
-	private Set<User> users = new HashSet<>();
+	private Set<UserResponse> users = new HashSet<>();
 
 	private String adminGmail;
 
 	private Boolean isAllowedInvites;
 
 	private String workspaceRole;
-
+	
+	private Boolean isPrivate;
+	
+	private String joinCode;
+	
+	private Set<JoinWorkspaceRequestResponse> requests = new HashSet<>();
+	
 	public String getWorkspaceName() {
 		return workspaceName;
 	}
@@ -47,11 +54,11 @@ public class WorkspaceResponse {
 		this.organizationName = organizationName;
 	}
 
-	public Set<User> getUsers() {
+	public Set<UserResponse> getUsers() {
 		return users;
 	}
 
-	public void setUsers(Set<User> users) {
+	public void setUsers(Set<UserResponse> users) {
 		this.users = users;
 	}
 
@@ -85,6 +92,30 @@ public class WorkspaceResponse {
 
 	public void setWorkspaceRole(String workspaceRole) {
 		this.workspaceRole = workspaceRole;
+	}
+
+	public Boolean getIsPrivate() {
+		return isPrivate;
+	}
+
+	public void setIsPrivate(Boolean isPrivate) {
+		this.isPrivate = isPrivate;
+	}
+
+	public String getJoinCode() {
+		return joinCode;
+	}
+
+	public void setJoinCode(String joinCode) {
+		this.joinCode = joinCode;
+	}
+
+	public Set<JoinWorkspaceRequestResponse> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(Set<JoinWorkspaceRequestResponse> requests) {
+		this.requests = requests;
 	}
 	
 	

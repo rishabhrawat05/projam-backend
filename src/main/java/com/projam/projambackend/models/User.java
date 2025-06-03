@@ -9,6 +9,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 
 import jakarta.persistence.Column;
@@ -53,6 +56,7 @@ public class User implements UserDetails{
 	@JoinTable(name = "user_workspaces",
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "workspace_id"))
+	@JsonBackReference
 	private Set<Workspace> workspaces = new HashSet<>();
 	
 	@ManyToMany(fetch = FetchType.EAGER)
@@ -70,6 +74,7 @@ public class User implements UserDetails{
 	private boolean isVerified = false;
 
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+	@JsonManagedReference
 	private Set<JoinWorkspaceRequest> joinRequests = new HashSet<>();
 	
 	@Override
@@ -191,4 +196,6 @@ public class User implements UserDetails{
 	    joinRequests.remove(request);
 	    request.setUser(null);
 	}
+	
+	
 }
