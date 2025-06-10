@@ -60,6 +60,9 @@ public class Workspace {
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<JoinWorkspaceRequest> requests = new HashSet<>();
 
+	@OneToMany(mappedBy = "workspace")
+	private Set<Project> projects;
+	
 	public Long getWorkspaceId() {
 		return workspaceId;
 	}
@@ -179,6 +182,15 @@ public class Workspace {
 	public String generateJoinCode() {
 		return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6).toUpperCase();
 	}
+
+	public Set<Project> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(Set<Project> projects) {
+		this.projects = projects;
+	}
+	
 	
 	
 }
