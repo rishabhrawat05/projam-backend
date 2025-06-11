@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -56,7 +57,7 @@ public class User implements UserDetails{
 	@JoinTable(name = "user_workspaces",
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "workspace_id"))
-	@JsonBackReference
+	@JsonIgnore
 	private Set<Workspace> workspaces = new HashSet<>();
 	
 	@ManyToMany(fetch = FetchType.EAGER)

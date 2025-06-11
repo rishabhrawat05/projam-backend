@@ -94,4 +94,9 @@ public class WorkspaceController {
 			@RequestParam String keyword){
 		return workspaceService.searchWorkspaceByKeyword(page,size,keyword);
 	}
+	
+	@GetMapping("/get/joincode")
+	public ResponseEntity<?> getWorkspaceJoinCodeByWorkspaceId(@RequestParam Long workspaceId){
+		return ResponseEntity.ok(workspaceService.getWorkspaceJoinCodeByWorkspaceId(workspaceId));
+	}
 }

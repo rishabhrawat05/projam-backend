@@ -1,6 +1,7 @@
 package com.projam.projambackend.dto;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+
 
 import com.projam.projambackend.enums.ProjectStatus;
 
@@ -10,9 +11,9 @@ private String projectName;
 	
 	private Boolean isPrivate;
 	
-	private LocalDateTime startDate;
+	private LocalDate startDate;
 	
-	private LocalDateTime endDate;
+	private LocalDate endDate;
 	
 	private ProjectStatus projectStatus;
 
@@ -32,19 +33,19 @@ private String projectName;
 		this.isPrivate = isPrivate;
 	}
 
-	public LocalDateTime getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(LocalDateTime startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public LocalDateTime getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(LocalDateTime endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 	
@@ -60,7 +61,7 @@ private String projectName;
 		
 	}
 
-	public ProjectResponse(String projectName, Boolean isPrivate, LocalDateTime startDate, LocalDateTime endDate, ProjectStatus projectStatus) {
+	public ProjectResponse(String projectName, Boolean isPrivate, LocalDate startDate, LocalDate endDate, ProjectStatus projectStatus) {
 		this.projectName = projectName;
 		this.isPrivate = isPrivate;
 		this.startDate = startDate;

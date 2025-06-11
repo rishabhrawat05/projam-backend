@@ -1,5 +1,6 @@
 package com.projam.projambackend.models;
 
+import java.time.LocalDateTime;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -7,7 +8,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
@@ -21,6 +24,9 @@ public class Member {
 	
 	@Column(name = "member_name", nullable = false)
 	private String memberName;
+	
+	@Column(name = "member_gmail", nullable = false)
+	private String memberGmail;
 	
 	@ManyToMany(mappedBy = "members")
 	private Set<Project> projects;
@@ -36,6 +42,13 @@ public class Member {
 	
 	@OneToMany(mappedBy = "member")
 	private Set<MemberRole> memberRole;
+	
+	@ManyToOne
+	@JoinColumn(name = "workspace_id")
+	private Workspace workspace;
+	
+	@Column(name = "member_join_date")
+	private LocalDateTime memberJoinDate;
 
 	public Long getMemberId() {
 		return memberId;
@@ -91,6 +104,30 @@ public class Member {
 
 	public void setMemberRole(Set<MemberRole> memberRole) {
 		this.memberRole = memberRole;
+	}
+
+	public Workspace getWorkspace() {
+		return workspace;
+	}
+
+	public void setWorkspace(Workspace workspace) {
+		this.workspace = workspace;
+	}
+
+	public LocalDateTime getMemberJoinDate() {
+		return memberJoinDate;
+	}
+
+	public void setMemberJoinDate(LocalDateTime memberJoinDate) {
+		this.memberJoinDate = memberJoinDate;
+	}
+
+	public String getMemberGmail() {
+		return memberGmail;
+	}
+
+	public void setMemberGmail(String memberGmail) {
+		this.memberGmail = memberGmail;
 	}
 	
 	

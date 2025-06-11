@@ -23,13 +23,13 @@ public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
 	Optional<Workspace> findByJoinCode(String joinCode);
 
 	@Query("SELECT new com.projam.projambackend.dto.WorkspaceSummaryDto(" + "w.workspaceId, " + "w.workspaceName, "
-			+ "w.isPrivate, " + "w.organizationName," + "w.workspaceSlug) " + "FROM Workspace w " + "JOIN w.users u "
+			+ "w.isPrivate, " + "w.organizationName, " + "w.workspaceSlug, " + "w.workspaceType) " + "FROM Workspace w " + "JOIN w.users u "
 			+ "WHERE u.gmail = :gmail "
-			+ "GROUP BY w.workspaceId, w.workspaceName, w.isPrivate, w.organizationName, w.workspaceSlug")
+			+ "GROUP BY w.workspaceId, w.workspaceName, w.isPrivate, w.organizationName, w.workspaceSlug, w.workspaceType")
 	Page<WorkspaceSummaryDto> findAllWorkspaceSummariesByUserGmail(@Param("gmail") String gmail, Pageable pageable);
 
 	@Query("SELECT new com.projam.projambackend.dto.WorkspaceSummaryDto(" + "w.workspaceId, " + "w.workspaceName, "
-			+ "w.isPrivate, " + "w.organizationName," + "w.workspaceSlug) " + "FROM Workspace w " + "WHERE w.workspaceName LIKE CONCAT(:keyword, '%') "
+			+ "w.isPrivate, " + "w.organizationName, " + "w.workspaceSlug, " + "w.workspaceType) " + "FROM Workspace w " + "WHERE w.workspaceName LIKE CONCAT(:keyword, '%') "
 			+ "OR w.organizationName LIKE CONCAT(:keyword, '%') " + "OR w.workspaceSlug LIKE CONCAT(:keyword, '%')")
 	Page<WorkspaceSummaryDto> findAllWorkspaceSummaryByKeyword(@Param("keyword") String keyword, Pageable pageable);
 

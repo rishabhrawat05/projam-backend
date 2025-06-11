@@ -1,6 +1,6 @@
 package com.projam.projambackend.models;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 import com.projam.projambackend.enums.ProjectStatus;
@@ -14,6 +14,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -43,10 +44,10 @@ public class Project {
 	private Set<Member> members;
 	
 	@Column(name = "start_date")
-	private LocalDateTime startDate;
+	private LocalDate startDate;
 	
 	@Column(name = "end_date")
-	private LocalDateTime endDate;
+	private LocalDate endDate;
 	
 	@Column(name = "is_private")
 	private Boolean isPrivate;
@@ -61,6 +62,10 @@ public class Project {
 	@Enumerated(EnumType.STRING)
 	@Column(name = "project_status")
 	private ProjectStatus projectStatus;
+	
+	@Lob
+	@Column(name = "project_description")
+	private String projectDescription;
 	
 	public Long getProjectId() {
 		return projectId;
@@ -86,19 +91,19 @@ public class Project {
 		this.tasks = tasks;
 	}
 
-	public LocalDateTime getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(LocalDateTime startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public LocalDateTime getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(LocalDateTime endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 
@@ -140,6 +145,22 @@ public class Project {
 
 	public void setStatus(ProjectStatus projectStatus) {
 		this.projectStatus = projectStatus;
+	}
+
+	public ProjectStatus getProjectStatus() {
+		return projectStatus;
+	}
+
+	public void setProjectStatus(ProjectStatus projectStatus) {
+		this.projectStatus = projectStatus;
+	}
+
+	public String getProjectDescription() {
+		return projectDescription;
+	}
+
+	public void setProjectDescription(String projectDescription) {
+		this.projectDescription = projectDescription;
 	}
 	
 	

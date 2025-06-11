@@ -11,6 +11,8 @@ public class WorkspaceSummaryDto {
 	private Boolean isPrivate;
 
 	private String organizationName;
+	
+	private String workspaceType;
 
 	public Long getWorkspaceId() {
 		return workspaceId;
@@ -48,18 +50,29 @@ public class WorkspaceSummaryDto {
 	public String getWorkspaceSlug() {
 		return workspaceSlug;
 	}
+	
+	
+
+	public String getWorkspaceType() {
+		return workspaceType;
+	}
+
+	public void setWorkspaceType(String workspaceType) {
+		this.workspaceType = workspaceType;
+	}
 
 	public void setWorkspaceSlug(String workspaceSlug) {
 		this.workspaceSlug = workspaceSlug;
 	}
 
 	public WorkspaceSummaryDto(Long workspaceId, String workspaceName,
-			Boolean isPrivate, String organizationName, String workspaceSlug) {
+			Boolean isPrivate, String organizationName, String workspaceSlug, String workspaceType) {
 		this.workspaceId = workspaceId;
 		this.workspaceName = workspaceName;
 		this.isPrivate = isPrivate;
 		this.organizationName = organizationName;
 		this.workspaceSlug = workspaceSlug;
+		this.workspaceType = workspaceType;
 	}
 	
 	public WorkspaceSummaryDto() {

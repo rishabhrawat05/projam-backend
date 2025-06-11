@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -54,14 +55,17 @@ public class Workspace {
 	private String joinCode;
 	
 	@ManyToMany(mappedBy = "workspaces")
-	@JsonManagedReference
+	@JsonIgnore
 	private Set<User> users = new HashSet<>();
 	
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<JoinWorkspaceRequest> requests = new HashSet<>();
 
 	@OneToMany(mappedBy = "workspace")
-	private Set<Project> projects;
+	private Set<Project> projects = new HashSet<>();
+	
+	@OneToMany(mappedBy = "workspace")
+	private Set<Member> members = new HashSet<>();
 	
 	public Long getWorkspaceId() {
 		return workspaceId;
@@ -191,6 +195,14 @@ public class Workspace {
 		this.projects = projects;
 	}
 	
+	public void addMember(Member member) {
+		members.add(member);
+		member.setWorkspace(this);
+	}
 	
+	public void removeMember(Member member) {
+		members.remove(member);
+		member.setWorkspace(null);
+	}
 	
 }

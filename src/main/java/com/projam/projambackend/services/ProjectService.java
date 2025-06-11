@@ -36,6 +36,7 @@ public class ProjectService {
 		project.setStartDate(projectRequest.getStartDate());
 		project.setEndDate(projectRequest.getEndDate());
 		project.setStatus(projectRequest.getProjectStatus());
+		project.setProjectDescription(projectRequest.getProjectDescription());
 		project.setWorkspace(workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found")));
 		projectRepository.save(project);
 		return projectToProjectResponse(project);
