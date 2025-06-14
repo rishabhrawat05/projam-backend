@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.projam.projambackend.dto.MemberRequest;
 import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
-
+import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.Workspace;
 import com.projam.projambackend.repositories.MemberRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
@@ -39,6 +39,11 @@ public class MemberService {
 	public Page<MemberResponse> getAllMembersByWorkspaceId(Long workspaceId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		return memberRepository.findAllMemberByWorkspaceId(workspaceId, pageable);
+	}
+	
+	public Page<MemberResponse> getAllMembersByProjectId(Long projectId, int page, int size){
+		Pageable pageable = PageRequest.of(page, size);
+		return memberRepository.findAllMemberByProjectId(projectId, pageable);
 	}
 
 }

@@ -130,6 +130,22 @@ public class Member {
 		this.memberGmail = memberGmail;
 	}
 	
+	public void addProject(Project project) {
+		this.projects.add(project);
+	}
+	
+	public void removeProject(Project project) {
+		this.projects.remove(project);
+	}
+	
+	public void addMemberRole(MemberRole memberRole) {
+		this.memberRole.add(memberRole);
+	}
+	
+	public void removeMemberRole(MemberRole memberRole) {
+		this.memberRole.remove(memberRole);
+	}
+	
 	
 	
 }

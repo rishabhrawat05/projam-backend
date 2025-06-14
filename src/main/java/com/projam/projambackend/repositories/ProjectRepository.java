@@ -17,8 +17,9 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
 	Optional<Project> findByProjectName(String projectName);
 
-	@Query("SELECT new com.projam.projambackend.dto.ProjectResponse(" + "p.projectName, "
+	@Query("SELECT new com.projam.projambackend.dto.ProjectResponse(" + "p.projectId, " + "p.projectName, "
 			+ "p.isPrivate, " + "p.startDate, " + "p.endDate, " + "p.projectStatus) " + "FROM Project p " + "JOIN p.workspace w " + "WHERE w.workspaceId = :workspaceId "
-			+ "GROUP BY p.projectName, p.isPrivate, p.startDate, p.endDate, p.projectStatus")
+			+ "GROUP BY p.projectId, p.projectName, p.isPrivate, p.startDate, p.endDate, p.projectStatus")
 	Page<ProjectResponse> findAllProjectResponseByWorkspace(@Param("workspaceId") Long workspaceId, Pageable pageable);
+	
 }

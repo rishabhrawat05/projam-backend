@@ -17,6 +17,8 @@ public class ProjectRequest {
 	private ProjectStatus projectStatus;
 	
 	private String projectDescription;
+	
+	private String adminGmail;
 
 	public String getProjectName() {
 		return projectName;
@@ -64,6 +66,14 @@ public class ProjectRequest {
 
 	public void setProjectDescription(String projectDescription) {
 		this.projectDescription = projectDescription;
+	}
+
+	public String getAdminGmail() {
+		return adminGmail;
+	}
+
+	public void setAdminGmail(String adminGmail) {
+		this.adminGmail = adminGmail;
 	}
 	
 	

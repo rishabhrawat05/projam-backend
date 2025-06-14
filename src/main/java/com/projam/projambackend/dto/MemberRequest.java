@@ -6,6 +6,7 @@ public class MemberRequest {
 	
 	private Long workspaceId;
 	
+	
 	public String getMemberGmail() {
 		return memberGmail;
 	}
@@ -21,4 +22,7 @@ public class MemberRequest {
 	public void setWorkspaceId(Long workspaceId) {
 		this.workspaceId = workspaceId;
 	}
+
+
+	
 }

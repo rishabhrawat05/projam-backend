@@ -27,8 +27,13 @@ public class MemberController {
 		return ResponseEntity.ok(memberService.addMemberToWorkspace(memberRequest));
 	}
 	
-	@GetMapping("/get")
+	@GetMapping("/get/by-workspace")
 	public Page<MemberResponse> getAllMembersByWorkspaceId(@RequestParam int page, @RequestParam int size, @RequestParam Long workspaceId){
 		return memberService.getAllMembersByWorkspaceId(workspaceId, page, size);
+	}
+	
+	@GetMapping("/get/by-project")
+	public Page<MemberResponse> getAllMembersByProjectId(@RequestParam int page, @RequestParam int size, @RequestParam Long projectId){
+		return memberService.getAllMembersByProjectId(projectId, page, size);
 	}
 }

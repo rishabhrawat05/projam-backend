@@ -1,6 +1,6 @@
 package com.projam.projambackend.models;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Set;
 
 import jakarta.persistence.Column;
@@ -32,10 +32,10 @@ public class Task {
 	private String description;
 	
 	@Column(name = "start_date")
-	private LocalDateTime startDate;
+	private LocalDate startDate;
 	
 	@Column(name = "end_date")
-	private LocalDateTime endDate;
+	private LocalDate endDate;
 	
 	@ManyToOne
 	@JoinColumn(name = "assignee_id")
@@ -62,6 +62,9 @@ public class Task {
 	
 	@OneToMany(mappedBy = "task")
 	private Set<Activity> activities;
+	
+	@OneToMany(mappedBy = "task")
+	private Set<Comment> comments;
 
 	public Long getTaskId() {
 		return taskId;
@@ -87,19 +90,19 @@ public class Task {
 		this.description = description;
 	}
 
-	public LocalDateTime getStartDate() {
+	public LocalDate getStartDate() {
 		return startDate;
 	}
 
-	public void setStartDate(LocalDateTime startDate) {
+	public void setStartDate(LocalDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public LocalDateTime getEndDate() {
+	public LocalDate getEndDate() {
 		return endDate;
 	}
 
-	public void setEndDate(LocalDateTime endDate) {
+	public void setEndDate(LocalDate endDate) {
 		this.endDate = endDate;
 	}
 
