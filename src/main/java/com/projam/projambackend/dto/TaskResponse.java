@@ -24,7 +24,9 @@ public class TaskResponse {
 
 	private String status;
 	
-	private Set<TagResponse> tags;
+	private Integer taskNumber;
+	
+	private Set<TagRequest> tags;
 
 	public String getTitle() {
 		return title;
@@ -74,7 +76,7 @@ public class TaskResponse {
 		this.assignedTo = assignedTo;
 	}
 
-	public void setTags(Set<TagResponse> tags) {
+	public void setTags(Set<TagRequest> tags) {
 		this.tags = tags;
 	}
 
@@ -93,6 +95,20 @@ public class TaskResponse {
 	public void setTaskId(Long taskId) {
 		this.taskId = taskId;
 	}
+	
+	public Set<TagRequest> getTags() {
+		return tags;
+	}
+	
+	
+
+	public Integer getTaskNumber() {
+		return taskNumber;
+	}
+
+	public void setTaskNumber(Integer taskNumber) {
+		this.taskNumber = taskNumber;
+	}
 
 	/**
 	 * @param taskId
@@ -106,7 +122,7 @@ public class TaskResponse {
 	 * @param tags
 	 */
 	public TaskResponse(Long taskId, String title, String description, LocalDate startDate, LocalDate endDate,
-			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagResponse> tags) {
+			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagRequest> tags, Integer taskNumber) {
 		this.taskId = taskId;
 		this.title = title;
 		this.description = description;
@@ -116,6 +132,7 @@ public class TaskResponse {
 		this.assignedTo = assignedTo;
 		this.status = status;
 		this.tags = tags;
+		this.taskNumber = taskNumber;
 	}
 	
 	public TaskResponse() {

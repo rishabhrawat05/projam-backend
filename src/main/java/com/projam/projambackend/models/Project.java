@@ -67,6 +67,14 @@ public class Project {
 	@Column(name = "project_description")
 	private String projectDescription;
 	
+	@ManyToMany
+    @JoinTable(
+        name = "project_tags",
+        joinColumns = @JoinColumn(name = "project_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set<Tag> tags;
+	
 	public Long getProjectId() {
 		return projectId;
 	}
@@ -169,6 +177,14 @@ public class Project {
 	
 	public void removeMember(Member member) {
 		this.members.remove(member);
+	}
+	
+	public Set<Tag> getTags() {
+		return tags;
+	}
+	
+	public void setTags(Set<Tag> tags) {
+		this.tags = tags;
 	}
 	
 }

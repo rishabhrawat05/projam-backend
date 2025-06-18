@@ -10,6 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -23,14 +24,16 @@ public class Tag {
 	@Column(name = "title", nullable = false)
 	private String title;
 	
-	
 	@ManyToMany
-    @JoinTable(
-        name = "tag_member_role",
-        joinColumns = @JoinColumn(name = "tag_id"),
-        inverseJoinColumns = @JoinColumn(name = "member_role_id")
-    )
+	@JoinTable(
+	    name = "tag_member_role",
+	    joinColumns = @JoinColumn(name = "tag_id"),
+	    inverseJoinColumns = @JoinColumn(name = "member_role_id")
+	)
 	private Set<MemberRole> memberRole;
+	
+	@ManyToMany(mappedBy = "tags")
+    private Set<Project> projects;
 
 	public Long getTagId() {
 		return tagId;
@@ -54,6 +57,14 @@ public class Tag {
 
 	public void setMemberRole(Set<MemberRole> memberRole) {
 		this.memberRole = memberRole;
+	}
+	
+	public Set<Project> getProjects() {
+		return projects;
+	}
+	
+	public void setProjects(Set<Project> projects) {
+		this.projects = projects;
 	}
 	
 	

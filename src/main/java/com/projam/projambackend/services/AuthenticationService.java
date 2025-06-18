@@ -100,7 +100,7 @@ public class AuthenticationService {
 		
 		roleSet.add(role);
 		User user = new User();
-		user.setUsername(signupRequest.getGmail());
+		user.setUsername(signupRequest.getUsername());
 		user.setGmail(signupRequest.getGmail());
 		user.setPassword(encodedPassword);
 		user.setOtp(otp);

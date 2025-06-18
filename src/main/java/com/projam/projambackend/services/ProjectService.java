@@ -57,7 +57,7 @@ public class ProjectService {
 		project.setProjectDescription(projectRequest.getProjectDescription());
 		project.setWorkspace(workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found")));
 		if(projectRequest.getIsPrivate()) {
-			Member member = memberRepository.findByMemberGmail(projectRequest.getAdminGmail()).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+			Member member = memberRepository.findByMemberGmailAndWorkspaceId(projectRequest.getAdminGmail(), workspaceId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 			member.addProject(project);
 			MemberRole memberRole = new MemberRole();
 			memberRole.setMember(member);

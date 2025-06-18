@@ -3,9 +3,6 @@ package com.projam.projambackend.dto;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.projam.projambackend.models.Member;
-import com.projam.projambackend.models.Tag;
-
 public class TaskRequest {
 
 	private String title;
@@ -16,13 +13,13 @@ public class TaskRequest {
 	
 	private LocalDate endDate;
 	
-	private Member assignee;
+	private MemberRequest assignee;
 	
-	private Member assignedTo;
+	private MemberRequest assignedTo;
 	
 	private String status;
 	
-	private Set<Tag> tags;
+	private Set<TagRequest> tags;
 
 	public String getTitle() {
 		return title;
@@ -56,19 +53,19 @@ public class TaskRequest {
 		this.endDate = endDate;
 	}
 
-	public Member getAssignee() {
+	public MemberRequest getAssignee() {
 		return assignee;
 	}
 
-	public void setAssignee(Member assignee) {
+	public void setAssignee(MemberRequest assignee) {
 		this.assignee = assignee;
 	}
 
-	public Member getAssignedTo() {
+	public MemberRequest getAssignedTo() {
 		return assignedTo;
 	}
 
-	public void setAssignedTo(Member assignedTo) {
+	public void setAssignedTo(MemberRequest assignedTo) {
 		this.assignedTo = assignedTo;
 	}
 
@@ -80,11 +77,11 @@ public class TaskRequest {
 		this.status = status;
 	}
 
-	public Set<Tag> getTags() {
+	public Set<TagRequest> getTags() {
 		return tags;
 	}
 
-	public void setTags(Set<Tag> tags) {
+	public void setTags(Set<TagRequest> tags) {
 		this.tags = tags;
 	}
 	

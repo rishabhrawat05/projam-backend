@@ -31,6 +31,9 @@ public class MemberRole {
 	@ManyToMany(mappedBy = "memberRole")
 	private Set<Tag> tags;
 	
+	@OneToMany(mappedBy = "memberRole", fetch = FetchType.LAZY)
+	private Set<Task> tasks;
+	
 	@ManyToOne
 	@JoinColumn(name = "member_id")
 	private Member member;

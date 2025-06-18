@@ -52,6 +52,9 @@ public class Task {
 	@JoinColumn(name = "project_id")
 	private Project project;
 	
+	@Column(nullable = false)
+	private Integer taskNumber;
+	
 	@ManyToMany
 	@JoinTable(
 	    name = "task_tags",
@@ -65,6 +68,10 @@ public class Task {
 	
 	@OneToMany(mappedBy = "task")
 	private Set<Comment> comments;
+	
+	@ManyToOne
+	@JoinColumn(name = "member_role_id")
+	private MemberRole memberRole;
 
 	public Long getTaskId() {
 		return taskId;
@@ -144,6 +151,42 @@ public class Task {
 
 	public void setProject(Project project) {
 		this.project = project;
+	}
+	
+	public void addTag(Tag tag) {
+		this.tags.add(tag);
+	}
+
+	public Set<Activity> getActivities() {
+		return activities;
+	}
+
+	public void setActivities(Set<Activity> activities) {
+		this.activities = activities;
+	}
+
+	public Set<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(Set<Comment> comments) {
+		this.comments = comments;
+	}
+
+	public MemberRole getMemberRole() {
+		return memberRole;
+	}
+
+	public void setMemberRole(MemberRole memberRole) {
+		this.memberRole = memberRole;
+	}
+
+	public Integer getTaskNumber() {
+		return taskNumber;
+	}
+
+	public void setTaskNumber(Integer taskNumber) {
+		this.taskNumber = taskNumber;
 	}
 	
 	

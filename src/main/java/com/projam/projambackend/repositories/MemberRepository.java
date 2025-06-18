@@ -26,9 +26,13 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
 			+ "GROUP BY m.memberName, m.memberGmail, m.memberJoinDate")
 	Page<MemberResponse> findAllMemberByProjectId(@Param("projectId") Long projectId, Pageable pageable);
 	
-	Optional<Member> findByMemberGmail(String memberGmail);
+	@Query("SELECT m FROM Member m JOIN m.projects p WHERE m.memberGmail = :memberGmail AND p.projectId = :projectId")
+	Optional<Member> findByMemberGmailAndProjectId(@Param("memberGmail") String memberGmail, @Param("projectId") Long projectId);
 	
 	@Query("SELECT m FROM Member m JOIN m.workspace w WHERE w.workspaceId = :workspaceId")
 	Set<Member> findAllByWorkspaceId(@Param("workspaceId") Long workspaceId);
+	
+	@Query("SELECT m FROM Member m WHERE m.memberGmail = :memberGmail AND m.workspace = :workspaceId")
+	Optional<Member> findByMemberGmailAndWorkspaceId(@Param("memberGmail") String memberGmail, @Param("workspaceId") Long workspaceId);
 }
 

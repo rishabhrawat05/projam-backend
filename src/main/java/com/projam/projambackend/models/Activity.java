@@ -61,6 +61,31 @@ public class Activity {
 	public void setTimeStamp(LocalDateTime timeStamp) {
 		this.timeStamp = timeStamp;
 	}
+
+	public Project getProject() {
+		return project;
+	}
+
+	public void setProject(Project project) {
+		this.project = project;
+	}
+
+	public Member getMember() {
+		return member;
+	}
+
+	public void setMember(Member member) {
+		this.member = member;
+	}
+
+	public Task getTask() {
+		return task;
+	}
+
+	public void setTask(Task task) {
+		this.task = task;
+	}
+	
 	
 	
 }

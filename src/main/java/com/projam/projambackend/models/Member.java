@@ -146,6 +146,12 @@ public class Member {
 		this.memberRole.remove(memberRole);
 	}
 	
+	public void addAssignedTask(Task task) {
+		this.assignedTasks.add(task);
+	}
 	
+	public void addTaskAssignedTo(Task task) {
+		this.tasksAssignedTo.add(task);
+	}
 	
 }
