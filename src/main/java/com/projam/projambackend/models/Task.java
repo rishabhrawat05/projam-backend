@@ -72,6 +72,10 @@ public class Task {
 	@ManyToOne
 	@JoinColumn(name = "member_role_id")
 	private MemberRole memberRole;
+	
+	@ManyToOne
+	@JoinColumn(name = "task_column_id")
+	private TaskColumn taskColumn;
 
 	public Long getTaskId() {
 		return taskId;
@@ -187,6 +191,14 @@ public class Task {
 
 	public void setTaskNumber(Integer taskNumber) {
 		this.taskNumber = taskNumber;
+	}
+
+	public TaskColumn getTaskColumn() {
+		return taskColumn;
+	}
+
+	public void setTaskColumn(TaskColumn taskColumn) {
+		this.taskColumn = taskColumn;
 	}
 	
 	

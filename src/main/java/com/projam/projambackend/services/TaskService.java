@@ -20,17 +20,20 @@ import com.projam.projambackend.dto.TaskStatusDto;
 import com.projam.projambackend.exceptions.MemberNotFoundException;
 import com.projam.projambackend.exceptions.MemberRoleNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
+import com.projam.projambackend.exceptions.TaskColumnNotFoundException;
 import com.projam.projambackend.exceptions.TaskNotFoundException;
 import com.projam.projambackend.models.Activity;
 import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.MemberRole;
 import com.projam.projambackend.models.Tag;
 import com.projam.projambackend.models.Task;
+import com.projam.projambackend.models.TaskColumn;
 import com.projam.projambackend.repositories.ActivityRepository;
 import com.projam.projambackend.repositories.MemberRepository;
 import com.projam.projambackend.repositories.MemberRoleRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.TagRepository;
+import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.TaskRepository;
 
 import jakarta.transaction.Transactional;
@@ -49,16 +52,19 @@ public class TaskService {
 	private final TagRepository tagRepository;
 
 	private final MemberRoleRepository memberRoleRepository;
+	
+	private final TaskColumnRepository taskColumnRepository;
 
 	public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository,
 			ActivityRepository activityRepository, MemberRepository memberRepository, TagRepository tagRepository,
-			MemberRoleRepository memberRoleRepository) {
+			MemberRoleRepository memberRoleRepository, TaskColumnRepository taskColumnRepository) {
 		this.taskRepository = taskRepository;
 		this.projectRepository = projectRepository;
 		this.activityRepository = activityRepository;
 		this.memberRepository = memberRepository;
 		this.tagRepository = tagRepository;
 		this.memberRoleRepository = memberRoleRepository;
+		this.taskColumnRepository = taskColumnRepository;
 	}
 
 	@Transactional
@@ -73,6 +79,8 @@ public class TaskService {
 				.findByMemberGmailAndProjectId(taskRequest.getAssignee().getMemberGmail(), projectId)
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
 
+		TaskColumn taskColumn = taskColumnRepository.findByTaskColumnSlug(taskRequest.getTaskColumnSlug())
+			    .orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
 		task.setTitle(taskRequest.getTitle());
 		task.setDescription(taskRequest.getDescription());
 		task.setStartDate(taskRequest.getStartDate());
@@ -84,7 +92,8 @@ public class TaskService {
 		task.setAssignedTo(assignedToMember);
 		assigneeMember.addTaskAssignedTo(task);
 		assignedToMember.addAssignedTask(task);
-
+		task.setTaskColumn(taskColumn);
+		taskColumn.getTasks().add(task);
 		task.setProject(projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 
@@ -108,7 +117,7 @@ public class TaskService {
 		}
 		taskRepository.save(task);
 		memberRepository.saveAll(List.of(assigneeMember, assignedToMember));
-
+		taskColumnRepository.save(taskColumn);
 		activity.setDescription(
 				"A new Task has been created by " + assigneeMember.getMemberName() + " at " + LocalDateTime.now());
 		activity.setTimeStamp(LocalDateTime.now());
@@ -171,6 +180,22 @@ public class TaskService {
 		activity.setTimeStamp(LocalDateTime.now());
 		activity.setProject(projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 		activity.setTask(task);
+		if(taskStatusDto.getStatus() != null) {
+			TaskColumn newColumn = taskColumnRepository.findByTaskColumnSlug(taskStatusDto.getStatus())
+		            .orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
+			
+			TaskColumn oldColumn = task.getTaskColumn();
+			
+			if(oldColumn != null) {
+				oldColumn.getTasks().remove(task);
+			}
+			
+			newColumn.getTasks().add(task);
+			task.setTaskColumn(newColumn);
+			taskColumnRepository.save(newColumn);
+		}
+		
+		
 		activityRepository.save(activity);
 		taskRepository.save(task);
 		

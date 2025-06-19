@@ -21,6 +21,8 @@ public class TaskRequest {
 	
 	private Set<TagRequest> tags;
 
+	private String taskColumnSlug;
+	
 	public String getTitle() {
 		return title;
 	}
@@ -83,6 +85,14 @@ public class TaskRequest {
 
 	public void setTags(Set<TagRequest> tags) {
 		this.tags = tags;
+	}
+
+	public String getTaskColumnSlug() {
+		return taskColumnSlug;
+	}
+
+	public void setTaskColumnSlug(String taskColumnSlug) {
+		this.taskColumnSlug = taskColumnSlug;
 	}
 	
 	
