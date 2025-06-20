@@ -52,7 +52,7 @@ public class TaskService {
 	private final TagRepository tagRepository;
 
 	private final MemberRoleRepository memberRoleRepository;
-	
+
 	private final TaskColumnRepository taskColumnRepository;
 
 	public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository,
@@ -80,14 +80,14 @@ public class TaskService {
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
 
 		TaskColumn taskColumn = taskColumnRepository.findByTaskColumnSlug(taskRequest.getTaskColumnSlug())
-			    .orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
+				.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
 		task.setTitle(taskRequest.getTitle());
 		task.setDescription(taskRequest.getDescription());
 		task.setStartDate(taskRequest.getStartDate());
 		task.setEndDate(taskRequest.getEndDate());
 		task.setStatus(taskRequest.getStatus());
 		task.setTaskNumber(taskRepository.countByProject(projectRepository.findById(projectId)
-				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"))) + 1);		
+				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"))) + 1);
 		task.setAssignee(assigneeMember);
 		task.setAssignedTo(assignedToMember);
 		assigneeMember.addTaskAssignedTo(task);
@@ -121,7 +121,8 @@ public class TaskService {
 		activity.setDescription(
 				"A new Task has been created by " + assigneeMember.getMemberName() + " at " + LocalDateTime.now());
 		activity.setTimeStamp(LocalDateTime.now());
-		activity.setProject(projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
+		activity.setProject(projectRepository.findById(projectId)
+				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 		activity.setTask(task);
 		activity.setMember(assigneeMember);
 		activityRepository.save(activity);
@@ -147,7 +148,7 @@ public class TaskService {
 		taskResponse.setAssignedTo(assignedTo);
 		taskResponse.setStartDate(task.getStartDate());
 		taskResponse.setEndDate(task.getEndDate());
-		if(task.getTaskId() !=  null) {
+		if (task.getTaskId() != null) {
 			taskResponse.setTaskId(task.getTaskId());
 		}
 		Set<Tag> tags = task.getTags();
@@ -170,36 +171,38 @@ public class TaskService {
 		Page<Task> tasks = taskRepository.findAllByProjectId(projectId, pageable);
 		return tasks.map(this::taskToTaskResponse);
 	}
-	
+
 	@Transactional
 	public TaskResponse updateTaskStatus(TaskStatusDto taskStatusDto, Long projectId) {
-		Task task = taskRepository.findByIdAndProjectId(taskStatusDto.getTaskId(), projectId).orElseThrow(() -> new TaskNotFoundException("Task Not Found"));
+		Task task = taskRepository.findByIdAndProjectId(taskStatusDto.getTaskId(), projectId)
+				.orElseThrow(() -> new TaskNotFoundException("Task Not Found"));
 		task.setStatus(taskStatusDto.getStatus());
 		Activity activity = new Activity();
-		activity.setDescription("Task-" + task.getTaskNumber() + " status has been updated to " + taskStatusDto.getStatus());
+		activity.setDescription(
+				"Task-" + task.getTaskNumber() + " status has been updated to " + taskStatusDto.getStatus());
 		activity.setTimeStamp(LocalDateTime.now());
-		activity.setProject(projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
+		activity.setProject(projectRepository.findById(projectId)
+				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 		activity.setTask(task);
-		if(taskStatusDto.getStatus() != null) {
+		if (taskStatusDto.getStatus() != null) {
 			TaskColumn newColumn = taskColumnRepository.findByTaskColumnSlug(taskStatusDto.getStatus())
-		            .orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
-			
+					.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
+
 			TaskColumn oldColumn = task.getTaskColumn();
-			
-			if(oldColumn != null) {
+
+			if (oldColumn != null) {
 				oldColumn.getTasks().remove(task);
 			}
-			
+
 			newColumn.getTasks().add(task);
 			task.setTaskColumn(newColumn);
 			taskColumnRepository.save(newColumn);
 		}
-		
-		
+
 		activityRepository.save(activity);
 		taskRepository.save(task);
-		
+
 		return taskToTaskResponse(task);
-		
+
 	}
 }
