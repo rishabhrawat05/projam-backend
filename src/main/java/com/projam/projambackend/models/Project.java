@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +19,7 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -74,6 +76,16 @@ public class Project {
         inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags;
+	
+	@ManyToOne(fetch = FetchType.EAGER)
+	@JoinColumn(name = "github_installation_id")
+	private GithubInstallation githubInstallation;
+
+	@Column(name = "linked_repo_name")
+	private String linkedRepoName;
+
+	@Column(name = "linked_repo_owner")
+	private String linkedRepoOwner;
 	
 	public Long getProjectId() {
 		return projectId;
@@ -186,5 +198,31 @@ public class Project {
 	public void setTags(Set<Tag> tags) {
 		this.tags = tags;
 	}
+
+	public GithubInstallation getGithubInstallation() {
+		return githubInstallation;
+	}
+
+	public void setGithubInstallation(GithubInstallation githubInstallation) {
+		this.githubInstallation = githubInstallation;
+	}
+
+	public String getLinkedRepoName() {
+		return linkedRepoName;
+	}
+
+	public void setLinkedRepoName(String linkedRepoName) {
+		this.linkedRepoName = linkedRepoName;
+	}
+
+	public String getLinkedRepoOwner() {
+		return linkedRepoOwner;
+	}
+
+	public void setLinkedRepoOwner(String linkedRepoOwner) {
+		this.linkedRepoOwner = linkedRepoOwner;
+	}
+	
+	
 	
 }

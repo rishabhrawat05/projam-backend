@@ -2,6 +2,8 @@ package com.projam.projambackend.models;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -29,7 +31,7 @@ public class TaskColumn {
 	@Column(name = "task_col_slug")
 	private String taskColumnSlug;
 	
-	@OneToMany
+	@OneToMany(mappedBy = "taskColumn")
 	private Set<Task> tasks;
 	
 	@ManyToOne
@@ -95,7 +97,28 @@ public class TaskColumn {
 	public void setTaskColumnSlug(String taskColumnSlug) {
 		this.taskColumnSlug = taskColumnSlug;
 	}
+
+	/**
+	 * @param taskColumnId
+	 * @param taskColumnName
+	 * @param taskColumnColor
+	 * @param taskColumnSlug
+	 * @param tasks
+	 * @param workspace
+	 * @param project
+	 */
+	public TaskColumn(String taskColumnName, String taskColumnColor, String taskColumnSlug,
+			Workspace workspace, Project project) {
+		this.taskColumnName = taskColumnName;
+		this.taskColumnColor = taskColumnColor;
+		this.taskColumnSlug = taskColumnSlug;
+		this.workspace = workspace;
+		this.project = project;
+	}
 	
+	public TaskColumn() {
+		
+	}
 	
 	
 }

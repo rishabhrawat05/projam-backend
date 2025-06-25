@@ -22,4 +22,6 @@ public interface TaskRepository extends JpaRepository<Task, Long> {
 	
 	@Query("SELECT t FROM Task t JOIN t.project p WHERE t.taskId = :taskId AND p.projectId = :projectId")
 	Optional<Task> findByIdAndProjectId(@Param("taskId") Long taskId, @Param("projectId") Long projectId);
+	
+	Optional<Task> findByTaskKey(String taskKey);
 }

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -30,11 +31,27 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        String requestHeader = request.getHeader("Authorization");
+    	String path = request.getRequestURI();
+        
+
+        if (path.startsWith("/projam/github/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+    	
         String gmail = null;
         String token = null;
-        if (requestHeader != null && requestHeader.startsWith("Bearer ")) {
-            token = requestHeader.substring(7);
+        
+        if(request.getCookies() != null) {
+        	for(Cookie cookie : request.getCookies()) {
+        		if("token".equals(cookie.getName())) {
+        			token = cookie.getValue();
+        			break;
+        		}
+        	}
+        }
+        
+        if (token != null) {
             gmail = jwtHelper.getGmailFromToken(token);
             if (gmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(gmail);

@@ -26,6 +26,18 @@ public class TaskResponse {
 	
 	private Integer taskNumber;
 	
+	private String taskKey;
+	
+	private String githubIssueLink;
+	
+	private String githubRepoName;
+	
+	private String githubStatus;
+	
+	private Boolean isIntegrated;
+	
+	private String githubPullRequestLink;
+	
 	private Set<TagRequest> tags;
 
 	public String getTitle() {
@@ -109,6 +121,57 @@ public class TaskResponse {
 	public void setTaskNumber(Integer taskNumber) {
 		this.taskNumber = taskNumber;
 	}
+	
+	public String getTaskKey() {
+		return taskKey;
+	}
+
+	public void setTaskKey(String taskKey) {
+		this.taskKey = taskKey;
+	}
+	
+	
+
+	public String getGithubIssueLink() {
+		return githubIssueLink;
+	}
+
+	public void setGithubIssueLink(String githubIssueLink) {
+		this.githubIssueLink = githubIssueLink;
+	}
+
+	public String getGithubRepoName() {
+		return githubRepoName;
+	}
+
+	public void setGithubRepoName(String githubRepoName) {
+		this.githubRepoName = githubRepoName;
+	}
+
+	public String getGithubStatus() {
+		return githubStatus;
+	}
+
+	public void setGithubStatus(String githubStatus) {
+		this.githubStatus = githubStatus;
+	}
+
+	public Boolean getIsIntegrated() {
+		return isIntegrated;
+	}
+
+	public void setIsIntegrated(Boolean isIntegrated) {
+		this.isIntegrated = isIntegrated;
+	}
+	
+
+	public String getGithubPullRequestLink() {
+		return githubPullRequestLink;
+	}
+
+	public void setGithubPullRequestLink(String githubPullRequestLink) {
+		this.githubPullRequestLink = githubPullRequestLink;
+	}
 
 	/**
 	 * @param taskId
@@ -122,7 +185,7 @@ public class TaskResponse {
 	 * @param tags
 	 */
 	public TaskResponse(Long taskId, String title, String description, LocalDate startDate, LocalDate endDate,
-			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagRequest> tags, Integer taskNumber) {
+			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagRequest> tags, Integer taskNumber, String taskKey, String githubIssueLink, String githubRepoName, String githubStatus, Boolean isIntegrated, String githubPullRequestLink) {
 		this.taskId = taskId;
 		this.title = title;
 		this.description = description;
@@ -133,10 +196,20 @@ public class TaskResponse {
 		this.status = status;
 		this.tags = tags;
 		this.taskNumber = taskNumber;
+		this.taskKey = taskKey;
+		this.githubIssueLink = githubIssueLink;
+		this.githubRepoName = githubRepoName;
+		this.githubStatus = githubStatus;
+		this.isIntegrated = isIntegrated;
+		this.githubPullRequestLink = githubPullRequestLink;
 	}
 	
 	public TaskResponse() {
 		
 	}
+
+	
+	
+	
 	
 }

@@ -25,6 +25,7 @@ import com.projam.projambackend.exceptions.TaskNotFoundException;
 import com.projam.projambackend.models.Activity;
 import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.MemberRole;
+import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Tag;
 import com.projam.projambackend.models.Task;
 import com.projam.projambackend.models.TaskColumn;
@@ -78,24 +79,28 @@ public class TaskService {
 		Member assigneeMember = memberRepository
 				.findByMemberGmailAndProjectId(taskRequest.getAssignee().getMemberGmail(), projectId)
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
-
-		TaskColumn taskColumn = taskColumnRepository.findByTaskColumnSlug(taskRequest.getTaskColumnSlug())
+		Project project = projectRepository.findById(projectId)
+				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
+		TaskColumn taskColumn = taskColumnRepository
+				.findByTaskColumnSlugAndProject_ProjectId(taskRequest.getTaskColumnSlug(), projectId)
 				.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
 		task.setTitle(taskRequest.getTitle());
 		task.setDescription(taskRequest.getDescription());
 		task.setStartDate(taskRequest.getStartDate());
 		task.setEndDate(taskRequest.getEndDate());
 		task.setStatus(taskRequest.getStatus());
-		task.setTaskNumber(taskRepository.countByProject(projectRepository.findById(projectId)
-				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"))) + 1);
+		task.setTaskNumber(taskRepository.countByProject(project) + 1);
 		task.setAssignee(assigneeMember);
 		task.setAssignedTo(assignedToMember);
 		assigneeMember.addTaskAssignedTo(task);
 		assignedToMember.addAssignedTask(task);
 		task.setTaskColumn(taskColumn);
 		taskColumn.getTasks().add(task);
-		task.setProject(projectRepository.findById(projectId)
-				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
+		task.setProject(project);
+		String cleanedName = project.getProjectName().replaceAll("[^a-zA-Z]", "").toUpperCase();
+		String projectPrefix = cleanedName.substring(0, Math.min(4, cleanedName.length()));
+		String taskKey = projectPrefix + "-" + task.getTaskNumber();
+		task.setTaskKey(taskKey);
 
 		Set<TagRequest> tagRequests = taskRequest.getTags();
 		if (tagRequests != null) {
@@ -118,11 +123,10 @@ public class TaskService {
 		taskRepository.save(task);
 		memberRepository.saveAll(List.of(assigneeMember, assignedToMember));
 		taskColumnRepository.save(taskColumn);
-		activity.setDescription(
-				"A new Task has been created by " + assigneeMember.getMemberName() + " at " + LocalDateTime.now());
-		activity.setTimeStamp(LocalDateTime.now());
-		activity.setProject(projectRepository.findById(projectId)
-				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
+		LocalDateTime now = LocalDateTime.now();
+		activity.setDescription("A new Task has been created by " + assigneeMember.getMemberName() + " at " + now);
+		activity.setTimeStamp(now);
+		activity.setProject(project);
 		activity.setTask(task);
 		activity.setMember(assigneeMember);
 		activityRepository.save(activity);
@@ -148,6 +152,12 @@ public class TaskService {
 		taskResponse.setAssignedTo(assignedTo);
 		taskResponse.setStartDate(task.getStartDate());
 		taskResponse.setEndDate(task.getEndDate());
+		taskResponse.setTaskKey(task.getTaskKey());
+		taskResponse.setGithubIssueLink(task.getGithubIssueLink());
+		taskResponse.setGithubRepoName(task.getGithubRepoName());
+		taskResponse.setGithubStatus(task.getGithubStatus());
+		taskResponse.setIsIntegrated(task.getIsIntegrated());
+		taskResponse.setGithubPullRequestLink(task.getGithubPullRequestLink());
 		if (task.getTaskId() != null) {
 			taskResponse.setTaskId(task.getTaskId());
 		}
@@ -185,7 +195,8 @@ public class TaskService {
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 		activity.setTask(task);
 		if (taskStatusDto.getStatus() != null) {
-			TaskColumn newColumn = taskColumnRepository.findByTaskColumnSlug(taskStatusDto.getStatus())
+			TaskColumn newColumn = taskColumnRepository
+					.findByTaskColumnSlugAndProject_ProjectId(taskStatusDto.getStatus(), projectId)
 					.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
 
 			TaskColumn oldColumn = task.getTaskColumn();

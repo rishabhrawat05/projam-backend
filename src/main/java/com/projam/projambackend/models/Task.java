@@ -3,6 +3,9 @@ package com.projam.projambackend.models;
 import java.time.LocalDate;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -55,6 +58,9 @@ public class Task {
 	@Column(nullable = false)
 	private Integer taskNumber;
 	
+	@Column(name = "task_key", unique = true)
+    private String taskKey;
+	
 	@ManyToMany
 	@JoinTable(
 	    name = "task_tags",
@@ -76,6 +82,21 @@ public class Task {
 	@ManyToOne
 	@JoinColumn(name = "task_column_id")
 	private TaskColumn taskColumn;
+	
+	@Column(name = "github_issue_link")
+	private String githubIssueLink;
+	
+	@Column(name = "github_status")
+	private String githubStatus;
+	
+	@Column(name = "github_repo_name")
+	private String githubRepoName;
+	
+	@Column(name = "is_integrated")
+	private Boolean isIntegrated;
+	
+	@Column(name = "github_pull_request_link")
+	private String githubPullRequestLink;
 
 	public Long getTaskId() {
 		return taskId;
@@ -199,6 +220,54 @@ public class Task {
 
 	public void setTaskColumn(TaskColumn taskColumn) {
 		this.taskColumn = taskColumn;
+	}
+
+	public String getTaskKey() {
+		return taskKey;
+	}
+
+	public void setTaskKey(String taskKey) {
+		this.taskKey = taskKey;
+	}
+
+	public String getGithubIssueLink() {
+		return githubIssueLink;
+	}
+
+	public void setGithubIssueLink(String githubIssueLink) {
+		this.githubIssueLink = githubIssueLink;
+	}
+
+	public String getGithubStatus() {
+		return githubStatus;
+	}
+
+	public void setGithubStatus(String githubStatus) {
+		this.githubStatus = githubStatus;
+	}
+
+	public String getGithubRepoName() {
+		return githubRepoName;
+	}
+
+	public void setGithubRepoName(String githubRepoName) {
+		this.githubRepoName = githubRepoName;
+	}
+
+	public Boolean getIsIntegrated() {
+		return isIntegrated;
+	}
+
+	public void setIsIntegrated(Boolean isIntegrated) {
+		this.isIntegrated = isIntegrated;
+	}
+
+	public String getGithubPullRequestLink() {
+		return githubPullRequestLink;
+	}
+
+	public void setGithubPullRequestLink(String githubPullRequestLink) {
+		this.githubPullRequestLink = githubPullRequestLink;
 	}
 	
 	

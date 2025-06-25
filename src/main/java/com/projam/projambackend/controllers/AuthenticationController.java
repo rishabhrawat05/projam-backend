@@ -12,6 +12,9 @@ import com.projam.projambackend.dto.SignupRequest;
 import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.services.AuthenticationService;
 
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletResponse;
+
 @RestController
 @RequestMapping("/projam/auth")
 public class AuthenticationController {
@@ -23,8 +26,8 @@ public class AuthenticationController {
 	}
 	
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest){
-		return ResponseEntity.ok(authenticationService.login(loginRequest));
+	public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest, HttpServletResponse response){
+		return ResponseEntity.ok(authenticationService.login(loginRequest, response));
 	}
 	
 	@PostMapping("/verify/gmail")

@@ -31,7 +31,7 @@ public class WebConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
     	http.csrf(csrf -> csrf.disable())
     	.cors(Customizer.withDefaults())
-    	.authorizeHttpRequests(auth -> auth.requestMatchers("/projam/auth/**").permitAll().anyRequest().authenticated())
+    	.authorizeHttpRequests(auth -> auth.requestMatchers("/projam/auth/**", "/projam/github/**").permitAll().anyRequest().authenticated())
     	.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     	.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
     	return http.build();
@@ -49,7 +49,7 @@ public class WebConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**") 
-                        .allowedOrigins("http://localhost:5173")
+                		.allowedOriginPatterns("*")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);

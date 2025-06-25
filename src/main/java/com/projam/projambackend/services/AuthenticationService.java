@@ -1,11 +1,13 @@
 package com.projam.projambackend.services;
 
+import java.net.http.HttpHeaders;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +33,8 @@ import com.projam.projambackend.models.Role;
 import com.projam.projambackend.models.User;
 import com.projam.projambackend.repositories.RoleRepository;
 import com.projam.projambackend.repositories.UserRepository;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @Service
 public class AuthenticationService {
@@ -60,7 +64,7 @@ public class AuthenticationService {
 		this.roleRepository = roleRepository;
 	}
 
-	public LoginResponse login(LoginRequest loginRequest) {
+	public LoginResponse login(LoginRequest loginRequest, HttpServletResponse response) {
 		Authenticate(loginRequest.getGmail(), loginRequest.getPassword());
 		User user = userRepository.findByGmail(loginRequest.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found Exception with Email:" + loginRequest.getGmail()));
 		if(!user.isVerified()) {
@@ -71,6 +75,15 @@ public class AuthenticationService {
 		String refreshToken = jwtHelper.generateRefreshToken(userDetails);
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
+		ResponseCookie cookie = ResponseCookie.from("token", token)
+				.httpOnly(true)
+				.secure(false)
+				.path("/")
+				.maxAge(60*60)
+				.sameSite("Strict")
+				.build();
+		
+		response.addHeader("Set-Cookie", cookie.toString());
 		LoginResponse loginResponse = new LoginResponse();
 		loginResponse.setToken(token);
 		loginResponse.setRefreshToken(refreshToken);

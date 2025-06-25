@@ -2,6 +2,7 @@ package com.projam.projambackend.services;
 
 
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Page;
@@ -18,9 +19,12 @@ import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
 import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.MemberRole;
 import com.projam.projambackend.models.Project;
+import com.projam.projambackend.models.TaskColumn;
+import com.projam.projambackend.models.Workspace;
 import com.projam.projambackend.repositories.MemberRepository;
 import com.projam.projambackend.repositories.MemberRoleRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
+import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
 
 import jakarta.transaction.Transactional;
@@ -36,11 +40,14 @@ public class ProjectService {
 	
 	private final MemberRoleRepository memberRoleRepository;
 	
-	public ProjectService(ProjectRepository projectRepository, WorkspaceRepository workspaceRepository, MemberRepository memberRepository, MemberRoleRepository memberRoleRepository) {
+	private final TaskColumnRepository taskColumnRepository;
+	
+	public ProjectService(ProjectRepository projectRepository, WorkspaceRepository workspaceRepository, MemberRepository memberRepository, MemberRoleRepository memberRoleRepository, TaskColumnRepository taskColumnRepository) {
 		this.projectRepository = projectRepository;
 		this.workspaceRepository = workspaceRepository;
 		this.memberRepository = memberRepository;
 		this.memberRoleRepository = memberRoleRepository;
+		this.taskColumnRepository = taskColumnRepository;
 	}
 	
 	@Transactional
@@ -49,13 +56,14 @@ public class ProjectService {
 			throw new ProjectNameAlreadyExistException("Project with name " + projectRequest.getProjectName() + " already exists");
 		}
 		Project project = new Project();
+		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		project.setProjectName(projectRequest.getProjectName());
 		project.setIsPrivate(projectRequest.getIsPrivate());
 		project.setStartDate(projectRequest.getStartDate());
 		project.setEndDate(projectRequest.getEndDate());
 		project.setStatus(projectRequest.getProjectStatus());
 		project.setProjectDescription(projectRequest.getProjectDescription());
-		project.setWorkspace(workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found")));
+		project.setWorkspace(workspace);
 		if(projectRequest.getIsPrivate()) {
 			Member member = memberRepository.findByMemberGmailAndWorkspaceId(projectRequest.getAdminGmail(), workspaceId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 			member.addProject(project);
@@ -85,7 +93,11 @@ public class ProjectService {
 				memberRepository.save(member);
 			}
 		}
-		projectRepository.save(project);
+		Project savedProject = projectRepository.save(project);
+		List<TaskColumn> defaultColumns = List.of(new TaskColumn("To Do", "bg-bblue", "todo", workspace, savedProject),
+				new TaskColumn("In Progress", "bg-yyellow", "inprogress", workspace, savedProject),
+				new TaskColumn("Completed", "bg-ggreen", "completed", workspace, savedProject));
+		taskColumnRepository.saveAll(defaultColumns);
 		return projectToProjectResponse(project);
 	}
 	

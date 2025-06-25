@@ -1,5 +1,7 @@
 package com.projam.projambackend.dto;
 
+import java.util.Set;
+
 public class TaskColumnResponse {
 
 	private String taskColumnName;
@@ -9,6 +11,8 @@ public class TaskColumnResponse {
 	private Long workspaceId;
 
 	private Long projectId;
+	
+	private Set<TaskResponse> tasks;
 
 	public String getTaskColumnName() {
 		return taskColumnName;
@@ -41,4 +45,15 @@ public class TaskColumnResponse {
 	public void setProjectId(Long projectId) {
 		this.projectId = projectId;
 	}
+
+	public Set<TaskResponse> getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(Set<TaskResponse> tasks) {
+		this.tasks = tasks;
+	}
+
+	
+	
 }
