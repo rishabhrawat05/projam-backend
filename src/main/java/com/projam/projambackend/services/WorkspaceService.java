@@ -1,8 +1,6 @@
 package com.projam.projambackend.services;
 
-import java.security.Principal;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -13,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.projam.projambackend.dto.JoinWorkspaceRequestDto;
 import com.projam.projambackend.dto.JoinWorkspaceRequestResponse;
@@ -100,7 +99,7 @@ public class WorkspaceService {
 		newWorkspace.setWorkspaceRole("ADMIN");
 		newWorkspace.setWorkspaceRole(workspaceRequest.getWorkspaceRole());
 		newWorkspace.setIsAllowedInvites(workspaceRequest.getIsAllowedInvites());
-		member.setMemberName(user.getUsername());
+		member.setMemberName(user.getUserName());
 		member.setMemberGmail(user.getGmail());
 		member.setMemberJoinDate(LocalDateTime.now());
 		newWorkspace.addMember(member);
@@ -111,7 +110,7 @@ public class WorkspaceService {
 		return workspaceToWorkspaceResponse(newWorkspace);
 	}
 
-	public WorkspaceResponse updateWorkspace(WorkspaceRequest workspaceRequest, Long workspaceId) {
+	public WorkspaceResponse updateWorkspace(WorkspaceRequest workspaceRequest, String workspaceId) {
 		Optional<Workspace> workspaceOpt = workspaceRepository.findById(workspaceId);
 		if (workspaceOpt.isEmpty()) {
 			throw new WorkspaceNotFoundException("Workspace with the id " + workspaceId + " is not found");
@@ -190,7 +189,7 @@ public class WorkspaceService {
 		return workspaceResponse;
 	}
 
-	public String deleteWorkspaceById(Long workspaceId) {
+	public String deleteWorkspaceById(String workspaceId) {
 		Optional<Workspace> workspaceOpt = workspaceRepository.findById(workspaceId);
 		if (workspaceOpt.isEmpty()) {
 			throw new WorkspaceNotFoundException("Workspace with the id " + workspaceId + " is not found.");
@@ -202,7 +201,7 @@ public class WorkspaceService {
 		return "Workspace has been deleted Successfully";
 	}
 
-	public Workspace getWorkspaceById(Long workspaceId) {
+	public Workspace getWorkspaceById(String workspaceId) {
 		Optional<Workspace> workspaceOpt = workspaceRepository.findById(workspaceId);
 		if (workspaceOpt.isEmpty()) {
 			throw new WorkspaceNotFoundException("Workspace with the id " + workspaceId + " is not found.");
@@ -263,11 +262,11 @@ public class WorkspaceService {
 		joinToken.setEmail(gmail);
 		joinWorkspaceTokenRepository.save(joinToken);
 
-		return "https://projam.app/join/workspace/" + token;
+		return "http://localhost:8080/projam/workspace/join/workspace/" + token;
 	}
 	
 	@Transactional
-	public String joinWorkspaceWithInviteLink(String token) {
+	public RedirectView joinWorkspaceWithInviteLink(String token) {
 		JoinWorkspaceToken joinWorkspaceToken = joinWorkspaceTokenRepository.findByToken(token).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		if(joinWorkspaceToken.getExpiresAt().isBefore(LocalDateTime.now())) {
 			throw new JoinWorkspaceTokenExpiredException("The join workspace token has been expired");
@@ -282,13 +281,13 @@ public class WorkspaceService {
 	        workspace.getUsers().add(user);
 	    }
 		else {
-			return "Workspace is already Joined";
+			return new RedirectView("http://localhost:5173/home/workspaces");
 		}
 		Member member = new Member();
 		joinWorkspaceToken.setUsed(true);
 		joinWorkspaceToken.setToken(null);
 		workspace.addUser(user);
-		member.setMemberName(user.getUsername());
+		member.setMemberName(user.getUserName());
 		member.setMemberGmail(user.getGmail());
 		member.setMemberJoinDate(LocalDateTime.now());
 		workspace.addMember(member);
@@ -296,11 +295,11 @@ public class WorkspaceService {
 		userRepository.save(user);
 		workspaceRepository.save(workspace);
 		joinWorkspaceTokenRepository.save(joinWorkspaceToken);
-		return "Workspace joined using the invite link";
+		return new RedirectView("http://localhost:5173/home/workspaces");
 	}
 	
 	@Transactional
-	public String acceptSingleJoinRequest(Long requestId) {
+	public String acceptSingleJoinRequest(String requestId) {
 		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId).orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
 		joinWorkspaceRequest.setStatus("APPROVED");
 		User user = joinWorkspaceRequest.getUser();
@@ -308,7 +307,7 @@ public class WorkspaceService {
 		Workspace workspace = joinWorkspaceRequest.getWorkspace();
 		workspace.addUser(user);
 		user.addWorkspace(workspace);
-		member.setMemberName(user.getUsername());
+		member.setMemberName(user.getUserName());
 		member.setMemberGmail(user.getGmail());
 		member.setMemberJoinDate(LocalDateTime.now());
 		workspace.addMember(member);
@@ -321,7 +320,7 @@ public class WorkspaceService {
 	}
 	
 	@Transactional
-	public String acceptAllJoinRequest(Long workspaceId) {
+	public String acceptAllJoinRequest(String workspaceId) {
 		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		Set<JoinWorkspaceRequest> requests = workspace.getRequests();
 		for(JoinWorkspaceRequest request : requests) {
@@ -331,7 +330,7 @@ public class WorkspaceService {
 				User user = request.getUser();
 				user.addWorkspace(workspace);
 				workspace.addUser(user);
-				member.setMemberName(user.getUsername());
+				member.setMemberName(user.getUserName());
 				member.setMemberGmail(user.getGmail());
 				member.setMemberJoinDate(LocalDateTime.now());
 				workspace.addMember(member);
@@ -344,7 +343,7 @@ public class WorkspaceService {
 		return "All the requests has been Approved";
 	}
 	
-	public String rejectSingleJoinRequest(Long requestId) {
+	public String rejectSingleJoinRequest(String requestId) {
 		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId).orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
 		joinWorkspaceRequest.setStatus("REJECTED");
 		joinWorkspaceRequestRepository.save(joinWorkspaceRequest);
@@ -352,7 +351,7 @@ public class WorkspaceService {
 		return "Your Request to Join Workspace has been Accepted. Workspace join link has been sent to your email!";
 	}
 	
-	public String rejectAllJoinRequest(Long workspaceId) {
+	public String rejectAllJoinRequest(String workspaceId) {
 		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		Set<JoinWorkspaceRequest> requests = workspace.getRequests();
 		for(JoinWorkspaceRequest request : requests) {
@@ -379,7 +378,7 @@ public class WorkspaceService {
 		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		workspace.addUser(user);
 		Member member = new Member();
-		member.setMemberName(user.getUsername());
+		member.setMemberName(user.getUserName());
 		member.setMemberGmail(user.getGmail());
 		member.setMemberJoinDate(LocalDateTime.now());
 		workspace.addMember(member);
@@ -392,7 +391,6 @@ public class WorkspaceService {
 	
 	public Page<WorkspaceSummaryDto> getAllWorkspacesSummaryByUser(int page, int size, String gmail){
 		Pageable pageable = PageRequest.of(page, size);
-		User user = userRepository.findByGmail(gmail).orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		return workspaceRepository.findAllWorkspaceSummariesByUserGmail(gmail, pageable);
 		
 	}
@@ -402,7 +400,7 @@ public class WorkspaceService {
 		return workspaceRepository.findAllWorkspaceSummaryByKeyword(keyword, pageable);
 	}
 	
-	public String getWorkspaceJoinCodeByWorkspaceId(Long workspaceId) {
+	public String getWorkspaceJoinCodeByWorkspaceId(String workspaceId) {
 		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		return workspace.getJoinCode();
 	}

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.projam.projambackend.models.JoinWorkspaceToken;
 
 @Repository
-public interface JoinWorkspaceTokenRepository extends JpaRepository<JoinWorkspaceToken, Long> {
+public interface JoinWorkspaceTokenRepository extends JpaRepository<JoinWorkspaceToken, String> {
 
 	Optional<JoinWorkspaceToken> findByToken(String token);
 }

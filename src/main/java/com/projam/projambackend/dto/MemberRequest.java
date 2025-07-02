@@ -4,7 +4,7 @@ public class MemberRequest {
 
 	private String memberGmail;
 	
-	private Long workspaceId;
+	private String workspaceId;
 	
 	
 	public String getMemberGmail() {
@@ -15,11 +15,11 @@ public class MemberRequest {
 		this.memberGmail = memberGmail;
 	}
 	
-	public Long getWorkspaceId() {
+	public String getWorkspaceId() {
 		return workspaceId;
 	}
 	
-	public void setWorkspaceId(Long workspaceId) {
+	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
 	}
 

@@ -24,12 +24,12 @@ public class ProjectController {
 	}
 	
 	@PostMapping("/create")
-	public ResponseEntity<?> createNewProject(@RequestBody ProjectRequest projectRequest, @RequestParam Long workspaceId){
+	public ResponseEntity<?> createNewProject(@RequestBody ProjectRequest projectRequest, @RequestParam String workspaceId){
 		return ResponseEntity.ok(projectService.createNewProject(projectRequest, workspaceId));
 	}
 	
 	@GetMapping("/get")
-	public Page<ProjectResponse> getAllProjectByWorkspace(@RequestParam Long workspaceId, @RequestParam int size, @RequestParam int page){
+	public Page<ProjectResponse> getAllProjectByWorkspace(@RequestParam String workspaceId, @RequestParam int size, @RequestParam int page){
 		return projectService.getAllProjectsByWorkspace(size, page, workspaceId);
 	}
 	

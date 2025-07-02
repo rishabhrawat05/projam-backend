@@ -7,7 +7,7 @@ public class TagRequest {
 
 	private String title;
 	
-	private Set<Long> memberRoleId;
+	private Set<String> memberRoleId;
 	
 	public String getTitle() {
 		return title;
@@ -17,11 +17,11 @@ public class TagRequest {
 		this.title = title;
 	}
 
-	public Set<Long> getMemberRoleId() {
+	public Set<String> getMemberRoleId() {
 		return memberRoleId;
 	}
 
-	public void setMemberRoleId(Set<Long> memberRoleId) {
+	public void setMemberRoleId(Set<String> memberRoleId) {
 		this.memberRoleId = memberRoleId;
 	}
 	

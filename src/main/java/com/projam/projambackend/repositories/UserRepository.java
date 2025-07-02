@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 import com.projam.projambackend.models.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Long>{
+public interface UserRepository extends JpaRepository<User, String>{
 
 	public Optional<User> findByGmail(String gmail);
 

@@ -2,15 +2,15 @@ package com.projam.projambackend.dto;
 
 public class TaskStatusDto {
 
-	private Long taskId;
+	private String taskId;
 	
 	private String status;
 
-	public Long getTaskId() {
+	public String getTaskId() {
 		return taskId;
 	}
 
-	public void setTaskId(Long taskId) {
+	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
 

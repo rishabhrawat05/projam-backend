@@ -10,12 +10,12 @@ import com.projam.projambackend.models.Workspace;
 
 
 @Repository
-public interface GithubInstallationRepository extends JpaRepository<GithubInstallation, Long> {
+public interface GithubInstallationRepository extends JpaRepository<GithubInstallation, String> {
 
 
 	boolean existsByInstallationId(Long installationId);
 	
-	Optional<GithubInstallation> findByWorkspace_WorkspaceId(Long workspaceId);
+	Optional<GithubInstallation> findByWorkspace_WorkspaceId(String workspaceId);
 	
 	boolean existsByWorkspace(Workspace workspace);
 	

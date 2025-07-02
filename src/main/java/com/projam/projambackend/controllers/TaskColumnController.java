@@ -30,7 +30,7 @@ public class TaskColumnController {
 	}
 	
 	@GetMapping("/get")
-	public List<TaskColumnResponse> getAllTaskColumnByProjectId(@RequestParam Long projectId){
+	public List<TaskColumnResponse> getAllTaskColumnByProjectId(@RequestParam String projectId){
 		return taskColumnService.getAllTaskColumnByProjectId(projectId);
 	}
 }

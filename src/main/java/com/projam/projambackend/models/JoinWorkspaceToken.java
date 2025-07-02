@@ -2,10 +2,10 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -15,8 +15,7 @@ import jakarta.persistence.Table;
 public class JoinWorkspaceToken {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long tokenId;
+	private String tokenId;
 	
 	@Column(name = "token")
 	private String token;
@@ -33,11 +32,11 @@ public class JoinWorkspaceToken {
 	@Column(name = "token_used")
 	private Boolean used;
 
-	public Long getTokenId() {
+	public String getTokenId() {
 		return tokenId;
 	}
 
-	public void setTokenId(Long tokenId) {
+	public void setTokenId(String tokenId) {
 		this.tokenId = tokenId;
 	}
 
@@ -82,6 +81,8 @@ public class JoinWorkspaceToken {
 	}
 	
 	
-	
+	public JoinWorkspaceToken() {
+		this.tokenId = NanoIdUtils.randomNanoId();
+	}
 	
 }

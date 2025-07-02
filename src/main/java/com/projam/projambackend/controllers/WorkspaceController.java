@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.projam.projambackend.dto.JoinWorkspaceRequestDto;
 import com.projam.projambackend.dto.WorkspaceRequest;
@@ -34,12 +35,12 @@ public class WorkspaceController {
 
 	@PutMapping("/update/workspace")
 	public ResponseEntity<?> updateWorkspace(@RequestBody WorkspaceRequest workspaceRequest,
-			@RequestParam Long workspaceId) {
+			@RequestParam String workspaceId) {
 		return ResponseEntity.ok(workspaceService.updateWorkspace(workspaceRequest, workspaceId));
 	}
 
 	@DeleteMapping("/delete/workspace")
-	public ResponseEntity<?> deleteWorkspace(@RequestParam Long workspaceId) {
+	public ResponseEntity<?> deleteWorkspace(@RequestParam String workspaceId) {
 		return ResponseEntity.ok(workspaceService.deleteWorkspaceById(workspaceId));
 	}
 
@@ -50,7 +51,7 @@ public class WorkspaceController {
 
 	@PreAuthorize(value = "hasRole('ADMIN')")
 	@GetMapping("/workspace")
-	public ResponseEntity<?> getWorkspaceById(@RequestParam Long workspaceId) {
+	public ResponseEntity<?> getWorkspaceById(@RequestParam String workspaceId) {
 		return ResponseEntity.ok(workspaceService.getWorkspaceById(workspaceId));
 	}
 
@@ -60,17 +61,17 @@ public class WorkspaceController {
 	}
 
 	@GetMapping("/join/workspace/{token}")
-	public ResponseEntity<?> joinWorkspaceWithInviteLink(@PathVariable String token) {
-		return ResponseEntity.ok(workspaceService.joinWorkspaceWithInviteLink(token));
+	public RedirectView joinWorkspaceWithInviteLink(@PathVariable String token) {
+		return workspaceService.joinWorkspaceWithInviteLink(token);
 	}
 
 	@GetMapping("/accept/request")
-	public ResponseEntity<?> acceptSingleJoinRequest(@RequestParam Long requestId) {
+	public ResponseEntity<?> acceptSingleJoinRequest(@RequestParam String requestId) {
 		return ResponseEntity.ok(workspaceService.acceptSingleJoinRequest(requestId));
 	}
 
 	@GetMapping("/accept/all/request")
-	public ResponseEntity<?> acceptAllJoinRequest(@RequestParam Long workspaceId) {
+	public ResponseEntity<?> acceptAllJoinRequest(@RequestParam String workspaceId) {
 		return ResponseEntity.ok(workspaceService.acceptAllJoinRequest(workspaceId));
 	}
 
@@ -96,7 +97,7 @@ public class WorkspaceController {
 	}
 	
 	@GetMapping("/get/joincode")
-	public ResponseEntity<?> getWorkspaceJoinCodeByWorkspaceId(@RequestParam Long workspaceId){
+	public ResponseEntity<?> getWorkspaceJoinCodeByWorkspaceId(@RequestParam String workspaceId){
 		return ResponseEntity.ok(workspaceService.getWorkspaceJoinCodeByWorkspaceId(workspaceId));
 	}
 }

@@ -1,15 +1,11 @@
 package com.projam.projambackend.models;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -24,8 +20,7 @@ import jakarta.persistence.Table;
 public class Task {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long taskId;
+	private String taskId;
 	
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -60,6 +55,12 @@ public class Task {
 	
 	@Column(name = "task_key", unique = true)
     private String taskKey;
+	
+	@Column(name = "assigned_at")
+	private LocalDateTime assignedAt;
+	
+	@Column(name = "completed_at")
+	private LocalDateTime completedAt;
 	
 	@ManyToMany
 	@JoinTable(
@@ -98,11 +99,11 @@ public class Task {
 	@Column(name = "github_pull_request_link")
 	private String githubPullRequestLink;
 
-	public Long getTaskId() {
+	public String getTaskId() {
 		return taskId;
 	}
 
-	public void setTaskId(Long taskId) {
+	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
 
@@ -270,6 +271,25 @@ public class Task {
 		this.githubPullRequestLink = githubPullRequestLink;
 	}
 	
+
+	public LocalDateTime getAssignedAt() {
+		return assignedAt;
+	}
+
+	public void setAssignedAt(LocalDateTime assignedAt) {
+		this.assignedAt = assignedAt;
+	}
+
+	public LocalDateTime getCompletedAt() {
+		return completedAt;
+	}
+
+	public void setCompletedAt(LocalDateTime completedAt) {
+		this.completedAt = completedAt;
+	}
 	
+	public Task() {
+		this.taskId = NanoIdUtils.randomNanoId();
+	}
 	
 }

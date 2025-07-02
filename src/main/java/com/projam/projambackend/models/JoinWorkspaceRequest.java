@@ -2,12 +2,11 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -18,8 +17,7 @@ import jakarta.persistence.Table;
 public class JoinWorkspaceRequest {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long requestId;
+	private String requestId;
 	
 	@ManyToOne
     @JoinColumn(name = "workspace_id")
@@ -36,11 +34,11 @@ public class JoinWorkspaceRequest {
     @Column(name = "status")
     private String status;
 
-	public Long getRequestId() {
+	public String getRequestId() {
 		return requestId;
 	}
 
-	public void setRequestId(Long requestId) {
+	public void setRequestId(String requestId) {
 		this.requestId = requestId;
 	}
 
@@ -76,6 +74,9 @@ public class JoinWorkspaceRequest {
 		this.status = status;
 	}
     
+	public JoinWorkspaceRequest() {
+		this.requestId = NanoIdUtils.randomNanoId();
+	}
     
     
     

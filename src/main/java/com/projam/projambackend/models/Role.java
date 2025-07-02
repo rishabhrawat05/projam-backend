@@ -2,10 +2,11 @@ package com.projam.projambackend.models;
 
 import java.util.Set;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
@@ -15,20 +16,19 @@ import jakarta.persistence.Table;
 public class Role {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long roleId;
+	private String roleId;
 	
 	@Column(name = "role_name", nullable = false)
 	private String roleName;
 
-	public Long getRoleId() {
+	public String getRoleId() {
 		return roleId;
 	}
 	
 	@ManyToMany(mappedBy = "roles")
 	private Set<User> users;
 
-	public void setRoleId(Long roleId) {
+	public void setRoleId(String roleId) {
 		this.roleId = roleId;
 	}
 
@@ -42,10 +42,11 @@ public class Role {
 	
 	public Role(String roleName) {
 		this.roleName = roleName;
+		this.roleId = NanoIdUtils.randomNanoId();
 	}
 	
 	public Role() {
-		
+		this.roleId = NanoIdUtils.randomNanoId();
 	}
 	
 	

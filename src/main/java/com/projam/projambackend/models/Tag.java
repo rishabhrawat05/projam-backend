@@ -2,15 +2,14 @@ package com.projam.projambackend.models;
 
 import java.util.Set;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -18,8 +17,7 @@ import jakarta.persistence.Table;
 public class Tag {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long tagId;
+	private String tagId;
 	
 	@Column(name = "title", nullable = false)
 	private String title;
@@ -35,11 +33,11 @@ public class Tag {
 	@ManyToMany(mappedBy = "tags")
     private Set<Project> projects;
 
-	public Long getTagId() {
+	public String getTagId() {
 		return tagId;
 	}
 
-	public void setTagId(Long tagId) {
+	public void setTagId(String tagId) {
 		this.tagId = tagId;
 	}
 
@@ -67,5 +65,7 @@ public class Tag {
 		this.projects = projects;
 	}
 	
-	
+	public Tag() {
+		this.tagId = NanoIdUtils.randomNanoId();
+	}
 }

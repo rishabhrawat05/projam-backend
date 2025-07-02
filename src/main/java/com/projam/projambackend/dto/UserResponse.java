@@ -8,7 +8,7 @@ import com.projam.projambackend.models.Role;
 
 public class UserResponse {
 
-	private Long userId;
+	private String userId;
 	
 	
 	private String username;
@@ -29,12 +29,12 @@ public class UserResponse {
 	private Set<JoinWorkspaceRequestResponse> joinRequests = new HashSet<>();
 
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 

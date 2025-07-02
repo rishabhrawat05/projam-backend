@@ -4,7 +4,7 @@ public class MemberRoleRequest {
 
 	private String roleName;
 	
-	private Long memberRoleId;
+	private String memberRoleId;
 
 	public String getRoleName() {
 		return roleName;
@@ -14,11 +14,11 @@ public class MemberRoleRequest {
 		this.roleName = roleName;
 	}
 
-	public Long getMemberRoleId() {
+	public String getMemberRoleId() {
 		return memberRoleId;
 	}
 
-	public void setMemberRoleId(Long memberRoleId) {
+	public void setMemberRoleId(String memberRoleId) {
 		this.memberRoleId = memberRoleId;
 	}
 	

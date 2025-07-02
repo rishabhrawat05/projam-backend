@@ -2,12 +2,9 @@ package com.projam.projambackend.models;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -19,8 +16,7 @@ import jakarta.persistence.Table;
 public class TaskColumn {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long taskColumnId;
+	private String taskColumnId;
 	
 	@Column(name = "task_column_name", nullable = false)
 	private String taskColumnName;
@@ -41,12 +37,15 @@ public class TaskColumn {
 	@ManyToOne
 	@JoinColumn(name = "project_id")
 	private Project project;
+	
+	@Column(name = "task_column_index")
+	private int taskColumnIndex;
 
-	public Long getTaskColumnId() {
+	public String getTaskColumnId() {
 		return taskColumnId;
 	}
 
-	public void setTaskColumnId(Long taskColumnId) {
+	public void setTaskColumnId(String taskColumnId) {
 		this.taskColumnId = taskColumnId;
 	}
 
@@ -97,6 +96,16 @@ public class TaskColumn {
 	public void setTaskColumnSlug(String taskColumnSlug) {
 		this.taskColumnSlug = taskColumnSlug;
 	}
+	
+	
+
+	public int getTaskColumnIndex() {
+		return taskColumnIndex;
+	}
+
+	public void setTaskColumnIndex(int taskColumnIndex) {
+		this.taskColumnIndex = taskColumnIndex;
+	}
 
 	/**
 	 * @param taskColumnId
@@ -108,16 +117,18 @@ public class TaskColumn {
 	 * @param project
 	 */
 	public TaskColumn(String taskColumnName, String taskColumnColor, String taskColumnSlug,
-			Workspace workspace, Project project) {
+			Workspace workspace, Project project, int taskColumnIndex) {
+		this.taskColumnId = NanoIdUtils.randomNanoId();
 		this.taskColumnName = taskColumnName;
 		this.taskColumnColor = taskColumnColor;
 		this.taskColumnSlug = taskColumnSlug;
 		this.workspace = workspace;
 		this.project = project;
+		this.taskColumnIndex = taskColumnIndex;
 	}
 	
 	public TaskColumn() {
-		
+		this.taskColumnId = NanoIdUtils.randomNanoId();
 	}
 	
 	

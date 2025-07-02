@@ -6,7 +6,7 @@ import com.projam.projambackend.enums.ProjectStatus;
 
 public class ProjectResponse {
 
-	private Long projectId;
+	private String projectId;
 
 	private String projectName;
 
@@ -63,15 +63,15 @@ public class ProjectResponse {
 	}
 	
 
-	public Long getProjectId() {
+	public String getProjectId() {
 		return projectId;
 	}
 
-	public void setProjectId(Long projectId) {
+	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 
-	public ProjectResponse(Long projectId, String projectName, Boolean isPrivate, LocalDate startDate, LocalDate endDate,
+	public ProjectResponse(String projectId, String projectName, Boolean isPrivate, LocalDate startDate, LocalDate endDate,
 			ProjectStatus projectStatus) {
 		this.projectId = projectId;
 		this.projectName = projectName;

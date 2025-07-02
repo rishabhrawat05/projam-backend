@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -20,8 +20,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -34,9 +32,8 @@ import jakarta.persistence.Table;
 public class User implements UserDetails{
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "user_id")
-	private Long userId;
+	private String userId;
 	
 	@Column(name = "username")
 	private String username;
@@ -96,11 +93,11 @@ public class User implements UserDetails{
 		return this.gmail;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -198,5 +195,11 @@ public class User implements UserDetails{
 	    request.setUser(null);
 	}
 	
+	public User() {
+		this.userId = NanoIdUtils.randomNanoId();
+	}
 	
+	public String getUserName() {
+		return this.username;
+	}
 }

@@ -35,7 +35,6 @@ public class MemberResponse {
 	}
 
 	public MemberResponse(String memberName, String memberGmail, LocalDateTime memberJoinDate) {
-		super();
 		this.memberName = memberName;
 		this.memberJoinDate = memberJoinDate;
 		this.memberGmail = memberGmail;

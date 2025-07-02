@@ -2,10 +2,10 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,8 +16,7 @@ import jakarta.persistence.Table;
 public class Activity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long activityId;
+	private String activityId;
 	
 	@Column(name = "description", nullable = false)
 	private String description;
@@ -38,11 +37,11 @@ public class Activity {
 	private Task task;
 
 	
-	public Long getActivityId() {
+	public String getActivityId() {
 		return activityId;
 	}
 
-	public void setActivityId(Long activityId) {
+	public void setActivityId(String activityId) {
 		this.activityId = activityId;
 	}
 
@@ -86,6 +85,8 @@ public class Activity {
 		this.task = task;
 	}
 	
-	
+	public Activity() {
+		this.activityId = NanoIdUtils.randomNanoId();
+	}
 	
 }

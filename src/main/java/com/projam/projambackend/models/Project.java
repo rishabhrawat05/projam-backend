@@ -1,17 +1,18 @@
 package com.projam.projambackend.models;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.projam.projambackend.enums.ProjectStatus;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -19,7 +20,6 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -27,23 +27,22 @@ import jakarta.persistence.Table;
 public class Project {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long projectId;
+	private String projectId;
 	
 	@Column(name = "project_name", nullable = false)
 	private String projectName;
 	
-	@OneToMany
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
 	@JoinColumn(name = "project_id")
 	private Set<Task> tasks;
 	
-	@ManyToMany
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinTable(
 		    name = "project_members",
 		    joinColumns = @JoinColumn(name = "project_id"),
 		    inverseJoinColumns = @JoinColumn(name = "member_id")
 		)
-	private Set<Member> members;
+	private Set<Member> members = new HashSet<>(); ;
 	
 	@Column(name = "start_date")
 	private LocalDate startDate;
@@ -54,7 +53,7 @@ public class Project {
 	@Column(name = "is_private")
 	private Boolean isPrivate;
 	
-	@OneToMany(mappedBy = "project")
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Activity> activities;
 
 	@ManyToOne
@@ -69,7 +68,7 @@ public class Project {
 	@Column(name = "project_description")
 	private String projectDescription;
 	
-	@ManyToMany
+	@ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     @JoinTable(
         name = "project_tags",
         joinColumns = @JoinColumn(name = "project_id"),
@@ -87,11 +86,15 @@ public class Project {
 	@Column(name = "linked_repo_owner")
 	private String linkedRepoOwner;
 	
-	public Long getProjectId() {
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Set<MemberRole> memberRoles;
+
+	
+	public String getProjectId() {
 		return projectId;
 	}
 
-	public void setProjectId(Long projectId) {
+	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 
@@ -224,5 +227,17 @@ public class Project {
 	}
 	
 	
+	
+	public Set<MemberRole> getMemberRoles() {
+		return memberRoles;
+	}
+
+	public void setMemberRoles(Set<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
+
+	public Project() {
+		this.projectId = NanoIdUtils.randomNanoId();
+	}
 	
 }

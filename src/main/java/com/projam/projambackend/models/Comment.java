@@ -1,9 +1,9 @@
 package com.projam.projambackend.models;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -13,8 +13,7 @@ import jakarta.persistence.Table;
 public class Comment {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long commentId;
+	private String commentId;
 	
 	@Column(name = "comment_description", nullable = false)
 	private String commentDescription;
@@ -25,11 +24,11 @@ public class Comment {
 	@Column(name = "user_gmail", nullable = false)
 	private String userGmail;
 
-	public Long getCommentId() {
+	public String getCommentId() {
 		return commentId;
 	}
 
-	public void setCommentId(Long commentId) {
+	public void setCommentId(String commentId) {
 		this.commentId = commentId;
 	}
 
@@ -55,6 +54,10 @@ public class Comment {
 
 	public void setUserGmail(String userGmail) {
 		this.userGmail = userGmail;
+	}
+	
+	public Comment() {
+		this.commentId = NanoIdUtils.randomNanoId();
 	}
 	
 }

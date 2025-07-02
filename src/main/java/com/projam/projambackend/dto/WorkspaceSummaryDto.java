@@ -2,7 +2,7 @@ package com.projam.projambackend.dto;
 
 public class WorkspaceSummaryDto {
 
-	private Long workspaceId;
+	private String workspaceId;
 
 	private String workspaceName;
 	
@@ -14,11 +14,11 @@ public class WorkspaceSummaryDto {
 	
 	private String workspaceType;
 
-	public Long getWorkspaceId() {
+	public String getWorkspaceId() {
 		return workspaceId;
 	}
 
-	public void setWorkspaceId(Long workspaceId) {
+	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
 	}
 
@@ -65,7 +65,7 @@ public class WorkspaceSummaryDto {
 		this.workspaceSlug = workspaceSlug;
 	}
 
-	public WorkspaceSummaryDto(Long workspaceId, String workspaceName,
+	public WorkspaceSummaryDto(String workspaceId, String workspaceName,
 			Boolean isPrivate, String organizationName, String workspaceSlug, String workspaceType) {
 		this.workspaceId = workspaceId;
 		this.workspaceName = workspaceName;

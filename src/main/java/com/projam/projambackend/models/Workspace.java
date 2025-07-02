@@ -3,15 +3,11 @@ package com.projam.projambackend.models;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,8 +20,7 @@ import jakarta.persistence.Table;
 public class Workspace {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long workspaceId;
+	private String workspaceId;
 	
 	@Column(name = "workspace_name", nullable = false)
 	private String workspaceName;
@@ -67,11 +62,11 @@ public class Workspace {
 	@OneToMany(mappedBy = "workspace")
 	private Set<Member> members = new HashSet<>();
 	
-	public Long getWorkspaceId() {
+	public String getWorkspaceId() {
 		return workspaceId;
 	}
 
-	public void setWorkspaceId(Long workspaceId) {
+	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
 	}
 
@@ -203,6 +198,10 @@ public class Workspace {
 	public void removeMember(Member member) {
 		members.remove(member);
 		member.setWorkspace(null);
+	}
+	
+	public Workspace() {
+		this.workspaceId = NanoIdUtils.randomNanoId();
 	}
 	
 }

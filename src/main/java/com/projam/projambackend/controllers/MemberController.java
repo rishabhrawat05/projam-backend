@@ -1,5 +1,7 @@
 package com.projam.projambackend.controllers;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +30,17 @@ public class MemberController {
 	}
 	
 	@GetMapping("/get/by-workspace")
-	public Page<MemberResponse> getAllMembersByWorkspaceId(@RequestParam int page, @RequestParam int size, @RequestParam Long workspaceId){
+	public Page<MemberResponse> getAllMembersByWorkspaceId(@RequestParam int page, @RequestParam int size, @RequestParam String workspaceId){
 		return memberService.getAllMembersByWorkspaceId(workspaceId, page, size);
 	}
 	
 	@GetMapping("/get/by-project")
-	public Page<MemberResponse> getAllMembersByProjectId(@RequestParam int page, @RequestParam int size, @RequestParam Long projectId){
+	public Page<MemberResponse> getAllMembersByProjectId(@RequestParam int page, @RequestParam int size, @RequestParam String projectId){
 		return memberService.getAllMembersByProjectId(projectId, page, size);
+	}
+	
+	@GetMapping("/get-all/keyword")
+	public List<MemberResponse> getAllMembersByKeyword(@RequestParam String keyword, @RequestParam String projectId){
+		return memberService.getAllMembersByKeyword(keyword, projectId);
 	}
 }

@@ -11,8 +11,6 @@ import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
 import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.services.AuthenticationService;
-
-import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController

@@ -10,11 +10,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.projam.projambackend.dto.WorkspaceSummaryDto;
-import com.projam.projambackend.models.User;
 import com.projam.projambackend.models.Workspace;
 
 @Repository
-public interface WorkspaceRepository extends JpaRepository<Workspace, Long> {
+public interface WorkspaceRepository extends JpaRepository<Workspace, String> {
 
 	Optional<Workspace> findByWorkspaceName(String workspaceName);
 

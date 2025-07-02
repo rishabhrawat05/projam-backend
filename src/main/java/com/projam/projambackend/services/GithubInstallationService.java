@@ -14,7 +14,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.projam.projambackend.dto.GithubInstallationResponse;
@@ -75,7 +74,7 @@ public class GithubInstallationService {
 	}
 
 	@Transactional
-	public void saveInstallation(String installationIdStr, Long workspaceId) throws Exception {
+	public void saveInstallation(String installationIdStr, String workspaceId) throws Exception {
 		Long installationId = Long.parseLong(installationIdStr);
 
 		Workspace workspace = workspaceRepository.findById(workspaceId)
@@ -163,7 +162,7 @@ public class GithubInstallationService {
 		return newAccessToken;
 	}
 
-	public List<Map<String, Object>> getAuthorizedRepos(Long workspaceId) throws Exception {
+	public List<Map<String, Object>> getAuthorizedRepos(String workspaceId) throws Exception {
 		GithubInstallation installation = githubInstallationRepository.findByWorkspace_WorkspaceId(workspaceId)
 				.orElseThrow(() -> new RuntimeException("GitHub Installation not found"));
 
@@ -183,7 +182,7 @@ public class GithubInstallationService {
 	}
 
 	@Transactional
-	public void connectRepoToProject(Long projectId, String repoName, String repoOwner) {
+	public void connectRepoToProject(String projectId, String repoName, String repoOwner) {
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 
@@ -202,7 +201,7 @@ public class GithubInstallationService {
 		projectRepository.save(project);
 	}
 
-	public GithubInstallationResponse isProjectConnected(Long projectId) {
+	public GithubInstallationResponse isProjectConnected(String projectId) {
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 

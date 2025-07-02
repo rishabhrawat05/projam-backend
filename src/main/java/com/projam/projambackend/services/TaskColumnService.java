@@ -50,6 +50,7 @@ public class TaskColumnService {
 		newTaskColumn.setTaskColumnSlug(taskColumnSlug);
 		newTaskColumn.setProject(projectRepository.findById(taskColumnRequest.getProjectId()).orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
 		newTaskColumn.setWorkspace(workspaceRepository.findById(taskColumnRequest.getWorkspaceId()).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found")));
+		newTaskColumn.setTaskColumnIndex((int) (taskColumnRepository.count()) + 1);
 		newTaskColumn.setTasks(null);
 		taskColumnRepository.save(newTaskColumn);
 		return taskColumnToTaskColumnResponse(newTaskColumn);
@@ -65,7 +66,7 @@ public class TaskColumnService {
 		return taskResponse;
 	}
 	
-	public List<TaskColumnResponse> getAllTaskColumnByProjectId(Long projectId) {
+	public List<TaskColumnResponse> getAllTaskColumnByProjectId(String projectId) {
 	    List<TaskColumn> columns = taskColumnRepository.findAllByProject_ProjectId(projectId);
 	    return columns.stream()
 	        .map(this::mapToTaskColumnResponse)
@@ -131,7 +132,7 @@ public class TaskColumnService {
 	    TagRequest tagDto = new TagRequest();
 	    tagDto.setTitle(tag.getTitle());
 	    
-	    Set<Long> memberRoleIds = tag.getMemberRole().stream()
+	    Set<String> memberRoleIds = tag.getMemberRole().stream()
 	        .map(role -> role.getMemberRoleId()) 
 	        .collect(Collectors.toSet());
 

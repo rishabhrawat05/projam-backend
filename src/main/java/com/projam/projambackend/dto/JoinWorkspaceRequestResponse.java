@@ -6,9 +6,6 @@ import java.time.LocalDateTime;
 public class JoinWorkspaceRequestResponse {
 
 	
-	private Long requestId;
-	
-	
     private WorkspaceResponse workspace;
 
     
@@ -20,15 +17,6 @@ public class JoinWorkspaceRequestResponse {
     
     private String status;
 
-
-	public Long getRequestId() {
-		return requestId;
-	}
-
-
-	public void setRequestId(Long requestId) {
-		this.requestId = requestId;
-	}
 
 
 	public WorkspaceResponse getWorkspace() {
@@ -68,6 +56,11 @@ public class JoinWorkspaceRequestResponse {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	
+	public JoinWorkspaceRequestResponse() {
+		
 	}
     
     

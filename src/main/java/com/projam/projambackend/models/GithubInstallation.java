@@ -2,10 +2,10 @@ package com.projam.projambackend.models;
 
 import java.time.Instant;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,8 +16,7 @@ import jakarta.persistence.Table;
 public class GithubInstallation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
     @Column(name = "installation_id", nullable = false, unique = true)
     private Long installationId;
@@ -35,11 +34,11 @@ public class GithubInstallation {
     @JoinColumn(name = "workspaceId")
     private Workspace workspace;
 
-	public Long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -81,6 +80,10 @@ public class GithubInstallation {
 
 	public void setWorkspace(Workspace workspace) {
 		this.workspace = workspace;
+	}
+	
+	public GithubInstallation() {
+		this.id = NanoIdUtils.randomNanoId();
 	}
 
 	

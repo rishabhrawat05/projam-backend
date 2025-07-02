@@ -6,9 +6,9 @@ public class TaskColumnRequest {
 	
 	private String taskColumnColor;
 	
-	private Long workspaceId;
+	private String workspaceId;
 	
-	private Long projectId;
+	private String projectId;
 
 	public String getTaskColumnName() {
 		return taskColumnName;
@@ -26,19 +26,19 @@ public class TaskColumnRequest {
 		this.taskColumnColor = taskColumnColor;
 	}
 
-	public Long getWorkspaceId() {
+	public String getWorkspaceId() {
 		return workspaceId;
 	}
 
-	public void setWorkspaceId(Long workspaceId) {
+	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
 	}
 
-	public Long getProjectId() {
+	public String getProjectId() {
 		return projectId;
 	}
 
-	public void setProjectId(Long projectId) {
+	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 	

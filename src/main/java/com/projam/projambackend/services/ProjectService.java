@@ -51,69 +51,108 @@ public class ProjectService {
 	}
 	
 	@Transactional
-	public ProjectResponse createNewProject(ProjectRequest projectRequest, Long workspaceId) {
-		if(projectRepository.findByProjectName(projectRequest.getProjectName()).isPresent()) {
-			throw new ProjectNameAlreadyExistException("Project with name " + projectRequest.getProjectName() + " already exists");
-		}
-		Project project = new Project();
-		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
-		project.setProjectName(projectRequest.getProjectName());
-		project.setIsPrivate(projectRequest.getIsPrivate());
-		project.setStartDate(projectRequest.getStartDate());
-		project.setEndDate(projectRequest.getEndDate());
-		project.setStatus(projectRequest.getProjectStatus());
-		project.setProjectDescription(projectRequest.getProjectDescription());
-		project.setWorkspace(workspace);
-		if(projectRequest.getIsPrivate()) {
-			Member member = memberRepository.findByMemberGmailAndWorkspaceId(projectRequest.getAdminGmail(), workspaceId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
-			member.addProject(project);
-			MemberRole memberRole = new MemberRole();
-			memberRole.setMember(member);
-			memberRole.setRoleName("ADMIN");
-			memberRoleRepository.save(memberRole);
-			member.addMemberRole(memberRole);
-			memberRepository.save(member);
-			project.addMember(member);
-		}
-		else {
-			Set<Member> members = memberRepository.findAllByWorkspaceId(workspaceId);
-			project.setMembers(members);
-			for(Member member : members) {
-				member.addProject(project);
-				MemberRole memberRole = new MemberRole();
-				memberRole.setMember(member);
-				if(member.getMemberGmail().equals(projectRequest.getAdminGmail())) {
-					memberRole.setRoleName("ADMIN");
-				}
-				else {
-					memberRole.setRoleName("MEMBER");
-				}
-				memberRoleRepository.save(memberRole);
-				member.addMemberRole(memberRole);
-				memberRepository.save(member);
-			}
-		}
-		Project savedProject = projectRepository.save(project);
-		List<TaskColumn> defaultColumns = List.of(new TaskColumn("To Do", "bg-bblue", "todo", workspace, savedProject),
-				new TaskColumn("In Progress", "bg-yyellow", "inprogress", workspace, savedProject),
-				new TaskColumn("Completed", "bg-ggreen", "completed", workspace, savedProject));
-		taskColumnRepository.saveAll(defaultColumns);
-		return projectToProjectResponse(project);
+	public ProjectResponse createNewProject(ProjectRequest projectRequest, String workspaceId) {
+
+	    if (projectRepository.findByProjectName(projectRequest.getProjectName()).isPresent()) {
+	        throw new ProjectNameAlreadyExistException("Project with name " + projectRequest.getProjectName() + " already exists");
+	    }
+
+	    Workspace workspace = workspaceRepository.findById(workspaceId)
+	            .orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+
+	    Project project = new Project();
+	    project.setProjectName(projectRequest.getProjectName());
+	    project.setIsPrivate(projectRequest.getIsPrivate());
+	    project.setStartDate(projectRequest.getStartDate());
+	    project.setEndDate(projectRequest.getEndDate());
+	    project.setStatus(projectRequest.getProjectStatus());
+	    project.setProjectDescription(projectRequest.getProjectDescription());
+	    project.setWorkspace(workspace);
+
+	    if (projectRequest.getIsPrivate()) {
+
+	        Member admin = memberRepository.findByMemberGmailAndWorkspaceId(projectRequest.getAdminGmail(), workspaceId)
+	                .orElseThrow(() -> new MemberNotFoundException("Admin member not found"));
+
+	        project.addMember(admin);
+	        admin.addProject(project);
+
+	        MemberRole adminRole = createMemberRoleWithPermissions(admin, project, "ADMIN");
+	        admin.addMemberRole(adminRole);
+
+	    } else {
+
+	        Set<Member> members = memberRepository.findAllByWorkspaceId(workspaceId);
+	        project.setMembers(members);
+
+	        for (Member member : members) {
+	            member.addProject(project);
+
+	            String roleName = member.getMemberGmail().equals(projectRequest.getAdminGmail()) ? "ADMIN" : "MEMBER";
+	            MemberRole memberRole = createMemberRoleWithPermissions(member, project, roleName);
+	            member.addMemberRole(memberRole);
+	        }
+	    }
+
+	    List<TaskColumn> defaultColumns = List.of(
+	            new TaskColumn("To Do", "bg-bblue", "todo", workspace, project, 1),
+	            new TaskColumn("In Progress", "bg-yyellow", "inprogress", workspace, project, 2),
+	            new TaskColumn("Completed", "bg-ggreen", "completed", workspace, project, 3)
+	    );
+
+	    projectRepository.save(project);
+	    taskColumnRepository.saveAll(defaultColumns);
+
+	    return projectToProjectResponse(project);
 	}
+
 	
-	public String deleteProject(Long projectId) {
+	private MemberRole createMemberRoleWithPermissions(Member member, Project project, String roleName) {
+	    MemberRole memberRole = new MemberRole();
+	    memberRole.setMember(member);
+	    memberRole.setProject(project);
+	    memberRole.setRoleName(roleName);
+
+	    if ("ADMIN".equals(roleName)) {
+	        memberRole.setCanCreateTask(true);
+	        memberRole.setCanEditTask(true);
+	        memberRole.setCanDeleteTask(true);
+	        memberRole.setCanAssignTask(true);
+	        memberRole.setCanManageMembers(true);
+	        memberRole.setCanEditProject(true);
+	        memberRole.setCanDeleteProject(true);
+	        memberRole.setCanCreateColumn(true);
+	        memberRole.setCanDeleteColumn(true);
+	    } else if ("MEMBER".equals(roleName)) {
+	        memberRole.setCanCreateTask(true);
+	        memberRole.setCanEditTask(true);
+	        memberRole.setCanDeleteTask(false);
+	        memberRole.setCanAssignTask(false);
+	        memberRole.setCanManageMembers(false);
+	        memberRole.setCanEditProject(false);
+	        memberRole.setCanDeleteProject(false);
+	        memberRole.setCanCreateColumn(false);
+	        memberRole.setCanDeleteColumn(false);
+	    }
+
+	    return memberRole;
+	}
+
+	
+	public String deleteProject(String projectId) {
 		Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		projectRepository.delete(project);
 		return "Project has been deleted successfully";
 	}
 	
-	public Page<ProjectResponse> getAllProjectsByWorkspace(int size, int page, Long workspaceId){
+	public Page<ProjectResponse> getAllProjectsByWorkspace(int size, int page, String workspaceId){
 		Pageable pageable = PageRequest.of(page, size);
 		return projectRepository.findAllProjectResponseByWorkspace(workspaceId, pageable);
 	}
 	
 	public ProjectResponse projectToProjectResponse(Project project) {
 		ProjectResponse projectResponse = new ProjectResponse();
+		projectResponse.setProjectId(project.getProjectId());	
 		projectResponse.setProjectName(project.getProjectName());
 		projectResponse.setIsPrivate(project.getIsPrivate());
 		projectResponse.setStartDate(project.getStartDate());

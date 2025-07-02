@@ -3,10 +3,11 @@ package com.projam.projambackend.models;
 import java.time.LocalDateTime;
 import java.util.Set;
 
+import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
@@ -19,8 +20,7 @@ import jakarta.persistence.Table;
 public class Member {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long memberId;
+	private String memberId;
 	
 	@Column(name = "member_name", nullable = false)
 	private String memberName;
@@ -31,30 +31,30 @@ public class Member {
 	@ManyToMany(mappedBy = "members")
 	private Set<Project> projects;
 	
-	@OneToMany(mappedBy = "assignee")
+	@OneToMany(mappedBy = "assignee",  cascade = CascadeType.ALL)
 	private Set<Task> assignedTasks;
 
-	@OneToMany(mappedBy = "assignedTo")
+	@OneToMany(mappedBy = "assignedTo",  cascade = CascadeType.ALL)
 	private Set<Task> tasksAssignedTo;
 	
-	@OneToMany(mappedBy = "member")
+	@OneToMany(mappedBy = "member",  cascade = CascadeType.ALL)
 	private Set<Activity> activities;
 	
-	@OneToMany(mappedBy = "member")
+	@OneToMany(mappedBy = "member",  cascade = CascadeType.ALL)
 	private Set<MemberRole> memberRole;
 	
 	@ManyToOne
 	@JoinColumn(name = "workspace_id")
-	private Workspace workspace;
+	private Workspace workspace; 
 	
 	@Column(name = "member_join_date")
 	private LocalDateTime memberJoinDate;
 
-	public Long getMemberId() {
+	public String getMemberId() {
 		return memberId;
 	}
 
-	public void setMemberId(Long memberId) {
+	public void setMemberId(String memberId) {
 		this.memberId = memberId;
 	}
 
@@ -152,6 +152,10 @@ public class Member {
 	
 	public void addTaskAssignedTo(Task task) {
 		this.tasksAssignedTo.add(task);
+	}
+	
+	public Member() {
+		this.memberId = NanoIdUtils.randomNanoId();
 	}
 	
 }

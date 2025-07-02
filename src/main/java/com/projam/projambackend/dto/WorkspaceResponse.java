@@ -7,6 +7,8 @@ import com.projam.projambackend.models.JoinWorkspaceRequest;
 import com.projam.projambackend.models.User;
 
 public class WorkspaceResponse {
+	
+	private String workspaceId;
 
 	private String workspaceName;
 
@@ -116,6 +118,14 @@ public class WorkspaceResponse {
 
 	public void setRequests(Set<JoinWorkspaceRequestResponse> requests) {
 		this.requests = requests;
+	}
+
+	public String getWorkspaceId() {
+		return workspaceId;
+	}
+
+	public void setWorkspaceId(String workspaceId) {
+		this.workspaceId = workspaceId;
 	}
 	
 	

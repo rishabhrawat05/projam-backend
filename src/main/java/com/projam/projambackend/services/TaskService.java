@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.projam.projambackend.dto.MemberRequest;
 import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.dto.TagRequest;
 import com.projam.projambackend.dto.TaskRequest;
@@ -69,7 +68,7 @@ public class TaskService {
 	}
 
 	@Transactional
-	public TaskResponse addTask(TaskRequest taskRequest, Long projectId) {
+	public TaskResponse addTask(TaskRequest taskRequest, String projectId) {
 		Task task = new Task();
 		Activity activity = new Activity();
 
@@ -92,6 +91,9 @@ public class TaskService {
 		task.setTaskNumber(taskRepository.countByProject(project) + 1);
 		task.setAssignee(assigneeMember);
 		task.setAssignedTo(assignedToMember);
+		if(assignedToMember != null) {
+			task.setAssignedAt(LocalDateTime.now());
+		}
 		assigneeMember.addTaskAssignedTo(task);
 		assignedToMember.addAssignedTask(task);
 		task.setTaskColumn(taskColumn);
@@ -124,7 +126,7 @@ public class TaskService {
 		memberRepository.saveAll(List.of(assigneeMember, assignedToMember));
 		taskColumnRepository.save(taskColumn);
 		LocalDateTime now = LocalDateTime.now();
-		activity.setDescription("A new Task has been created by " + assigneeMember.getMemberName() + " at " + now);
+		activity.setDescription("A new Task has been created by " + assigneeMember.getMemberName());
 		activity.setTimeStamp(now);
 		activity.setProject(project);
 		activity.setTask(task);
@@ -176,20 +178,23 @@ public class TaskService {
 		return taskResponse;
 	}
 
-	public Page<TaskResponse> getAllTasksByProjectId(Long projectId, int page, int size) {
+	public Page<TaskResponse> getAllTasksByProjectId(String projectId, int page, int size) {
 		Pageable pageable = PageRequest.of(page, size);
 		Page<Task> tasks = taskRepository.findAllByProjectId(projectId, pageable);
 		return tasks.map(this::taskToTaskResponse);
 	}
 
 	@Transactional
-	public TaskResponse updateTaskStatus(TaskStatusDto taskStatusDto, Long projectId) {
+	public TaskResponse updateTaskStatus(TaskStatusDto taskStatusDto, String projectId) {
 		Task task = taskRepository.findByIdAndProjectId(taskStatusDto.getTaskId(), projectId)
 				.orElseThrow(() -> new TaskNotFoundException("Task Not Found"));
 		task.setStatus(taskStatusDto.getStatus());
+		if(taskStatusDto.getStatus().equals("completed")) {
+			task.setCompletedAt(LocalDateTime.now());
+		}
 		Activity activity = new Activity();
 		activity.setDescription(
-				"Task-" + task.getTaskNumber() + " status has been updated to " + taskStatusDto.getStatus());
+				task.getTaskKey() + " status has been updated to " + taskStatusDto.getStatus());
 		activity.setTimeStamp(LocalDateTime.now());
 		activity.setProject(projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));

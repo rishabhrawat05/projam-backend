@@ -8,9 +8,11 @@ public class TaskColumnResponse {
 
 	private String taskColumnColor;
 
-	private Long workspaceId;
+	private String workspaceId;
 
-	private Long projectId;
+	private String projectId;
+	
+	private int taskColumnIndex;
 	
 	private Set<TaskResponse> tasks;
 
@@ -30,19 +32,19 @@ public class TaskColumnResponse {
 		this.taskColumnColor = taskColumnColor;
 	}
 
-	public Long getWorkspaceId() {
+	public String getWorkspaceId() {
 		return workspaceId;
 	}
 
-	public void setWorkspaceId(Long workspaceId) {
+	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
 	}
 
-	public Long getProjectId() {
+	public String getProjectId() {
 		return projectId;
 	}
 
-	public void setProjectId(Long projectId) {
+	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
 
@@ -52,6 +54,14 @@ public class TaskColumnResponse {
 
 	public void setTasks(Set<TaskResponse> tasks) {
 		this.tasks = tasks;
+	}
+
+	public int getTaskColumnIndex() {
+		return taskColumnIndex;
+	}
+
+	public void setTaskColumnIndex(int taskColumnIndex) {
+		this.taskColumnIndex = taskColumnIndex;
 	}
 
 	

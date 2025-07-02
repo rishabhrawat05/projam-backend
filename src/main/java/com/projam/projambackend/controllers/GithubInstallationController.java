@@ -1,6 +1,7 @@
 package com.projam.projambackend.controllers;
 
-import org.springframework.beans.factory.annotation.Value;
+import java.util.Base64;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
@@ -22,9 +23,13 @@ public class GithubInstallationController {
     public RedirectView githubCallback(@RequestParam("installation_id") String installationId, @RequestParam("state") String state) throws Exception {
         
 
-        String[] parts = state.split("_");
-        Long projectId = Long.parseLong(parts[0]);
-        Long workspaceId = Long.parseLong(parts[1]);
+    	String[] parts = state.split("--");
+    	if (parts.length != 2) {
+    	    throw new IllegalArgumentException("Invalid state parameter");
+    	}
+
+    	String projectId = new String(Base64.getDecoder().decode(parts[0]));
+    	String workspaceId = new String(Base64.getDecoder().decode(parts[1]));
         
         githubInstallationService.saveInstallation(installationId, workspaceId);
 
@@ -33,14 +38,14 @@ public class GithubInstallationController {
     }
 
     @GetMapping("/repos")
-    public ResponseEntity<?> getAuthorizedRepos(@RequestParam Long workspaceId) throws Exception {
+    public ResponseEntity<?> getAuthorizedRepos(@RequestParam String workspaceId) throws Exception {
         return ResponseEntity.ok(githubInstallationService.getAuthorizedRepos(workspaceId));
     }
 
 
     @PostMapping("/connect-repo")
     public ResponseEntity<?> connectRepoToProject(
-            @RequestParam Long projectId,
+            @RequestParam String projectId,
             @RequestParam String repoName,
             @RequestParam String repoOwner
     ) {
@@ -49,7 +54,7 @@ public class GithubInstallationController {
     }
 
     @GetMapping("/is-connected")
-    public ResponseEntity<?> isProjectConnected(@RequestParam Long projectId) {
+    public ResponseEntity<?> isProjectConnected(@RequestParam String projectId) {
         return ResponseEntity.ok(githubInstallationService.isProjectConnected(projectId));
     }
 

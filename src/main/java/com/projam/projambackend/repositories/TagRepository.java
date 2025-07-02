@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.projam.projambackend.models.Tag;
 
 @Repository
-public interface TagRepository extends JpaRepository<Tag, Long> {
+public interface TagRepository extends JpaRepository<Tag, String> {
 
 	Optional<Tag> findByTitle(String title);
 }

@@ -3,12 +3,9 @@ package com.projam.projambackend.dto;
 import java.time.LocalDate;
 import java.util.Set;
 
-import com.projam.projambackend.models.Member;
-import com.projam.projambackend.models.Tag;
-
 public class TaskResponse {
 	
-	private Long taskId;
+	private String taskId;
 
 	private String title;
 
@@ -100,11 +97,11 @@ public class TaskResponse {
 		this.status = status;
 	}
 
-	public Long getTaskId() {
+	public String getTaskId() {
 		return taskId;
 	}
 
-	public void setTaskId(Long taskId) {
+	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
 	
@@ -184,7 +181,7 @@ public class TaskResponse {
 	 * @param status
 	 * @param tags
 	 */
-	public TaskResponse(Long taskId, String title, String description, LocalDate startDate, LocalDate endDate,
+	public TaskResponse(String taskId, String title, String description, LocalDate startDate, LocalDate endDate,
 			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagRequest> tags, Integer taskNumber, String taskKey, String githubIssueLink, String githubRepoName, String githubStatus, Boolean isIntegrated, String githubPullRequestLink) {
 		this.taskId = taskId;
 		this.title = title;
