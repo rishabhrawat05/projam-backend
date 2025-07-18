@@ -1,5 +1,7 @@
 package com.projam.projambackend.services;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -53,10 +55,14 @@ public class DashboardService {
 		Project project = projectRepository.findById(projectId)
 			    .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
 
+		LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+		LocalDateTime endOfDay = startOfDay.plusDays(1);
+		
 		if (isAdmin) {
 			TeamStats teamStats = new TeamStats();
 			teamStats.setTotalMembers(projectRepository.countTotalMembersByProjectId(projectId));
-			teamStats.setActiveMembers(taskRepository.countActiveMembersByProjectId(projectId));
+			teamStats.setActiveMembers(taskRepository.countActiveMembersByProjectIdAndToday(projectId, startOfDay, endOfDay));
+			teamStats.setActiveMembersList(taskRepository.getActiveMembersByToday(projectId, startOfDay, endOfDay));
 			response.setTeamStats(teamStats);
 			response.setRecentTasks(taskRepository.getTaskByProjectAndAdmin(projectId, email));
 			response.setTaskStatusBreakdown(getTaskStatusBreakdown(projectId));

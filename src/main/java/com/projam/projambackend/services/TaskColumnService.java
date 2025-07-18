@@ -1,5 +1,7 @@
 package com.projam.projambackend.services;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -12,6 +14,8 @@ import com.projam.projambackend.dto.TagRequest;
 import com.projam.projambackend.dto.TaskColumnRequest;
 import com.projam.projambackend.dto.TaskColumnResponse;
 import com.projam.projambackend.dto.TaskResponse;
+import com.projam.projambackend.exceptions.MemberNotAuthorizedException;
+import com.projam.projambackend.exceptions.MemberNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
 import com.projam.projambackend.exceptions.TaskColumnAlreadyExistException;
 import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
@@ -19,6 +23,7 @@ import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.Tag;
 import com.projam.projambackend.models.Task;
 import com.projam.projambackend.models.TaskColumn;
+import com.projam.projambackend.repositories.MemberRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
@@ -32,13 +37,23 @@ public class TaskColumnService {
 	
 	private final WorkspaceRepository workspaceRepository;
 	
-	public TaskColumnService(TaskColumnRepository taskColumnRepository, ProjectRepository projectRepository, WorkspaceRepository workspaceRepository) {
+	private final MemberRepository memberRepository;
+	
+	public TaskColumnService(TaskColumnRepository taskColumnRepository, ProjectRepository projectRepository, WorkspaceRepository workspaceRepository, MemberRepository memberRepository) {
 		this.taskColumnRepository = taskColumnRepository;
 		this.projectRepository = projectRepository;
 		this.workspaceRepository = workspaceRepository;
+		this.memberRepository = memberRepository;
 	}
 	
 	public TaskColumnResponse addColumn(TaskColumnRequest taskColumnRequest) {
+		
+		Member member = memberRepository.findByMemberGmailAndProjectId(taskColumnRequest.getMemberGmail(), taskColumnRequest.getProjectId()).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		
+		if(!member.getMemberRole().stream().anyMatch(role -> role.isCanCreateColumn())) {
+			throw new MemberNotAuthorizedException("Member Not Authorized to create a new column");
+		}
+		
 		String taskColumnSlug = taskColumnRequest.getTaskColumnName().toLowerCase().replaceAll(" ", "");
 		Optional<TaskColumn> taskColumn = taskColumnRepository.findByTaskColumnSlugAndProject_ProjectId(taskColumnSlug, taskColumnRequest.getProjectId());
 		if(taskColumn.isPresent()) {
@@ -81,11 +96,13 @@ public class TaskColumnService {
 	    dto.setProjectId(column.getProject().getProjectId());
 	    dto.setWorkspaceId(column.getWorkspace().getWorkspaceId());
 
-	    Set<TaskResponse> taskResponses = column.getTasks().stream()
-	        .map(this::mapToTaskResponse)
-	        .collect(Collectors.toSet());
+	    
+	    List<TaskResponse> sortedTasks = column.getTasks().stream()
+	            .map(this::mapToTaskResponse)
+	            .sorted(Comparator.comparing(TaskResponse::getCreatedAt).reversed())
+	            .collect(Collectors.toList());
 
-	    dto.setTasks(taskResponses);
+	    dto.setTasks(sortedTasks);
 	    return dto;
 	}
 	
@@ -101,9 +118,12 @@ public class TaskColumnService {
 	    dto.setTaskKey(task.getTaskKey());
 	    dto.setGithubIssueLink(task.getGithubIssueLink());
 	    dto.setGithubRepoName(task.getGithubRepoName());
-	    dto.setGithubStatus(task.getGithubStatus());
+	    dto.setGithubIssueStatus(task.getGithubIssueStatus());
+	    dto.setGithubPrStatus(task.getGithubPrStatus());
 	    dto.setIsIntegrated(task.getIsIntegrated());
 	    dto.setGithubPullRequestLink(task.getGithubPullRequestLink());
+	    dto.setPriority(task.getPriority());
+	    dto.setCreatedAt(task.getCreatedAt());
 	    if (task.getAssignee() != null)
 	        dto.setAssignee(mapToMemberResponse(task.getAssignee()));
 
@@ -122,6 +142,7 @@ public class TaskColumnService {
 	
 	public MemberResponse mapToMemberResponse(Member member) {
 	    return new MemberResponse(
+	    	member.getMemberId(),
 	        member.getMemberName(),
 	        member.getMemberGmail(),
 	        member.getMemberJoinDate()

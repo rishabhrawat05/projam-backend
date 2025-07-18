@@ -5,6 +5,8 @@ public class MemberRoleResponse {
 	private String memberRoleId;
 
 	private String roleName;
+	
+	private String roleColor;
 
 	private boolean canCreateTask;
 
@@ -23,6 +25,10 @@ public class MemberRoleResponse {
 	private boolean canCreateColumn;
 
 	private boolean canDeleteColumn;
+	
+	private boolean canManageRolesAndPermission;
+	
+	private boolean canManageGithub;
 
 	public String getMemberRoleId() {
 		return memberRoleId;
@@ -123,10 +129,39 @@ public class MemberRoleResponse {
 	public void setCanDeleteColumn(boolean canDeleteColumn) {
 		this.canDeleteColumn = canDeleteColumn;
 	}
+	
+	
+
+	public String getRoleColor() {
+		return roleColor;
+	}
+
+	public void setRoleColor(String roleColor) {
+		this.roleColor = roleColor;
+	}
+	
+	
+
+	public boolean isCanManageRolesAndPermission() {
+		return canManageRolesAndPermission;
+	}
+
+	public void setCanManageRolesAndPermission(boolean canManageRolesAndPermission) {
+		this.canManageRolesAndPermission = canManageRolesAndPermission;
+	}
+
+	public boolean isCanManageGithub() {
+		return canManageGithub;
+	}
+
+	public void setCanManageGithub(boolean canManageGithub) {
+		this.canManageGithub = canManageGithub;
+	}
 
 	/**
 	 * @param memberRoleId
 	 * @param roleName
+	 * @param roleColor
 	 * @param canCreateTask
 	 * @param canEditTask
 	 * @param canDeleteTask
@@ -136,12 +171,16 @@ public class MemberRoleResponse {
 	 * @param canDeleteProject
 	 * @param canCreateColumn
 	 * @param canDeleteColumn
+	 * @param canManageRolesAndPermission
+	 * @param canManageGithub
 	 */
-	public MemberRoleResponse(String memberRoleId, String roleName, boolean canCreateTask, boolean canEditTask,
-			boolean canDeleteTask, boolean canAssignTask, boolean canManageMembers, boolean canEditProject,
-			boolean canDeleteProject, boolean canCreateColumn, boolean canDeleteColumn) {
+	public MemberRoleResponse(String memberRoleId, String roleName, String roleColor, boolean canCreateTask,
+			boolean canEditTask, boolean canDeleteTask, boolean canAssignTask, boolean canManageMembers,
+			boolean canEditProject, boolean canDeleteProject, boolean canCreateColumn, boolean canDeleteColumn,
+			boolean canManageRolesAndPermission, boolean canManageGithub) {
 		this.memberRoleId = memberRoleId;
 		this.roleName = roleName;
+		this.roleColor = roleColor;
 		this.canCreateTask = canCreateTask;
 		this.canEditTask = canEditTask;
 		this.canDeleteTask = canDeleteTask;
@@ -151,7 +190,11 @@ public class MemberRoleResponse {
 		this.canDeleteProject = canDeleteProject;
 		this.canCreateColumn = canCreateColumn;
 		this.canDeleteColumn = canDeleteColumn;
+		this.canManageRolesAndPermission = canManageRolesAndPermission;
+		this.canManageGithub = canManageGithub;
 	}
+
+	
 
 	
 }

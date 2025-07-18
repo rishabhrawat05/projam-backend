@@ -1,5 +1,6 @@
 package com.projam.projambackend.services;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -8,7 +9,13 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.projam.projambackend.dto.GithubAutomationResponse;
+import com.projam.projambackend.exceptions.TaskColumnNotFoundException;
+import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Task;
+import com.projam.projambackend.models.TaskColumn;
+import com.projam.projambackend.repositories.GithubAutomationRepository;
+import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.TaskRepository;
 
 import jakarta.transaction.Transactional;
@@ -18,10 +25,15 @@ public class GithubWebhookService {
 
 	private final TaskRepository taskRepository;
 	private final ObjectMapper mapper;
+	private final GithubAutomationRepository githubAutomationRepository;
+	private final TaskColumnRepository taskColumnRepository;
 
-	public GithubWebhookService(TaskRepository taskRepository) {
+	public GithubWebhookService(TaskRepository taskRepository, GithubAutomationRepository githubAutomationRepository,
+			TaskColumnRepository taskColumnRepository) {
 		this.taskRepository = taskRepository;
 		this.mapper = new ObjectMapper();
+		this.githubAutomationRepository = githubAutomationRepository;
+		this.taskColumnRepository = taskColumnRepository;
 	}
 
 	@Transactional
@@ -48,8 +60,11 @@ public class GithubWebhookService {
 				String repoName = root.get("repository").get("full_name").asText();
 				String title = root.get("pull_request").get("title").asText();
 				String pullRequestUrl = root.get("pull_request").get("html_url").asText();
-				
-				handleGithubPullRequestEvent(action, pullRequestUrl, repoName, title);
+				boolean merged = false;
+				if ("closed".equals(action) && root.get("pull_request").has("merged")) {
+					merged = root.get("pull_request").get("merged").asBoolean();
+				}
+				handleGithubPullRequestEvent(action, pullRequestUrl, repoName, title, merged);
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -76,11 +91,31 @@ public class GithubWebhookService {
 		task.setIsIntegrated(true);
 		task.setGithubIssueLink(issueUrl);
 		task.setGithubRepoName(repoName);
-		task.setGithubStatus(action);
+		task.setGithubIssueStatus(action);
+
+		Project project = task.getProject();
+		List<GithubAutomationResponse> githubAutomation = githubAutomationRepository
+				.getAllGithubAutomationResponseByProjectId(project.getProjectId());
+		if (action.equals("opened")) {
+			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("issue-opened")).findFirst()
+					.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+		}
+
+		TaskColumn newColumn = taskColumnRepository
+				.findByTaskColumnSlugAndProject_ProjectId(task.getStatus(), project.getProjectId())
+				.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
+
+		TaskColumn oldColumn = task.getTaskColumn();
+
+		if (oldColumn != null) {
+			oldColumn.getTasks().remove(task);
+		}
+
+		newColumn.getTasks().add(task);
+		task.setTaskColumn(newColumn);
+		taskColumnRepository.save(newColumn);
 
 		taskRepository.save(task);
-
-		System.out.println("Task " + taskKey + " updated with GitHub issue info.");
 	}
 
 	private String extractTaskKey(String title) {
@@ -91,8 +126,9 @@ public class GithubWebhookService {
 		}
 		return null;
 	}
-	
-	public void handleGithubPullRequestEvent(String action, String pullRequestUrl, String repoName, String title) {
+
+	public void handleGithubPullRequestEvent(String action, String pullRequestUrl, String repoName, String title,
+			boolean merged) {
 		String taskKey = extractTaskKey(title);
 
 		if (taskKey == null) {
@@ -111,10 +147,53 @@ public class GithubWebhookService {
 		task.setIsIntegrated(true);
 		task.setGithubPullRequestLink(pullRequestUrl);
 		task.setGithubRepoName(repoName);
-		task.setGithubStatus(action);
-		taskRepository.save(task);
+		task.setGithubPrStatus(action);
 
-		System.out.println("Task " + taskKey + " updated with GitHub pull request info.");
+		Project project = task.getProject();
+		List<GithubAutomationResponse> githubAutomation = githubAutomationRepository
+				.getAllGithubAutomationResponseByProjectId(project.getProjectId());
+
+		if (action.equals("opened")) {
+			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("pr-opened")).findFirst()
+					.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+		} else if (action.equals("closed")) {
+			if (merged) {
+				githubAutomation.stream().filter(github -> "merged".equals(github.getEdgeCondition())).findFirst()
+						.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+			} else {
+				githubAutomation.stream().filter(github -> "not_merged".equals(github.getEdgeCondition())).findFirst()
+						.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+			}
+		} else if (action.equals("reopened")) {
+			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("pr-reopened")).findFirst()
+					.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+		} else if (action.equals("approved")) {
+			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("pr-approved")).findFirst()
+					.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
+		} else if (action.equals("review_requested")) {
+		    githubAutomation.stream()
+		        .filter(github -> github.getSourceEvent().equals("review-requested"))
+		        .findFirst()
+		        .ifPresent(github -> {
+		            task.setStatus(github.getTargetColumn().replaceAll("-\\d+", ""));
+		        });
+		}
+
+
+		TaskColumn newColumn = taskColumnRepository
+				.findByTaskColumnSlugAndProject_ProjectId(task.getStatus(), project.getProjectId())
+				.orElseThrow(() -> new TaskColumnNotFoundException("Task Column Not Found"));
+
+		TaskColumn oldColumn = task.getTaskColumn();
+
+		if (oldColumn != null) {
+			oldColumn.getTasks().remove(task);
+		}
+
+		newColumn.getTasks().add(task);
+		task.setTaskColumn(newColumn);
+		taskColumnRepository.save(newColumn);
+		taskRepository.save(task);
 	}
 
 }

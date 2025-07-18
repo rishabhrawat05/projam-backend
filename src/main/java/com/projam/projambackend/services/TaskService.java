@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 
 import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.dto.TagRequest;
+import com.projam.projambackend.dto.TagResponse;
 import com.projam.projambackend.dto.TaskRequest;
 import com.projam.projambackend.dto.TaskResponse;
 import com.projam.projambackend.dto.TaskStatusDto;
+import com.projam.projambackend.enums.ProjectStatus;
+import com.projam.projambackend.exceptions.MemberNotAuthorizedException;
 import com.projam.projambackend.exceptions.MemberNotFoundException;
 import com.projam.projambackend.exceptions.MemberRoleNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
@@ -78,6 +81,11 @@ public class TaskService {
 		Member assigneeMember = memberRepository
 				.findByMemberGmailAndProjectId(taskRequest.getAssignee().getMemberGmail(), projectId)
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
+		
+		if(!assigneeMember.getMemberRole().stream().anyMatch(role -> role.isCanCreateTask())) {
+			throw new MemberNotAuthorizedException("Member Not Authorized To Create Task");
+		}
+		
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		TaskColumn taskColumn = taskColumnRepository
@@ -91,6 +99,8 @@ public class TaskService {
 		task.setTaskNumber(taskRepository.countByProject(project) + 1);
 		task.setAssignee(assigneeMember);
 		task.setAssignedTo(assignedToMember);
+		task.setPriority(taskRequest.getPriority());
+		task.setCreatedAt(LocalDateTime.now());
 		if(assignedToMember != null) {
 			task.setAssignedAt(LocalDateTime.now());
 		}
@@ -104,23 +114,13 @@ public class TaskService {
 		String taskKey = projectPrefix + "-" + task.getTaskNumber();
 		task.setTaskKey(taskKey);
 
-		Set<TagRequest> tagRequests = taskRequest.getTags();
+		Set<TagResponse> tagRequests = taskRequest.getTags();
 		if (tagRequests != null) {
-			for (TagRequest tagR : tagRequests) {
-				Tag tag = tagRepository.findByTitle(tagR.getTitle()).orElseGet(() -> new Tag());
-				tag.setTitle(tagR.getTitle());
-				Set<MemberRole> roles = tagR.getMemberRoleId().stream()
-						.map(id -> memberRoleRepository.findById(id)
-								.orElseThrow(() -> new MemberRoleNotFoundException("Member Role Not Found")))
-						.collect(Collectors.toSet());
-
-				tag.setMemberRole(roles);
-				tag = tagRepository.save(tag);
-
-				task.addTag(tag);
-			}
-		} else {
-			task.setTags(null);
+		    for (TagResponse tagR : tagRequests) {
+		        Tag tag = tagRepository.findById(tagR.getTagId())
+		                .orElseThrow(() -> new RuntimeException("Tag not found"));
+		        task.addTag(tag);
+		    }
 		}
 		taskRepository.save(task);
 		memberRepository.saveAll(List.of(assigneeMember, assignedToMember));
@@ -132,6 +132,12 @@ public class TaskService {
 		activity.setTask(task);
 		activity.setMember(assigneeMember);
 		activityRepository.save(activity);
+		
+		if(taskRepository.countByProject(project) >= 1) {
+			project.setProjectStatus(ProjectStatus.IN_PROGRESS);
+			projectRepository.save(project);
+		}
+		
 
 		return taskToTaskResponse(task);
 	}
@@ -142,6 +148,7 @@ public class TaskService {
 		taskResponse.setDescription(task.getDescription());
 		taskResponse.setStatus(task.getStatus());
 		taskResponse.setTaskNumber(task.getTaskNumber());
+		taskResponse.setPriority(task.getPriority());
 		MemberResponse assignee = new MemberResponse();
 		assignee.setMemberGmail(task.getAssignee().getMemberGmail());
 		assignee.setMemberJoinDate(task.getAssignee().getMemberJoinDate());
@@ -157,7 +164,8 @@ public class TaskService {
 		taskResponse.setTaskKey(task.getTaskKey());
 		taskResponse.setGithubIssueLink(task.getGithubIssueLink());
 		taskResponse.setGithubRepoName(task.getGithubRepoName());
-		taskResponse.setGithubStatus(task.getGithubStatus());
+		taskResponse.setGithubIssueStatus(task.getGithubIssueStatus());
+		taskResponse.setGithubPrStatus(task.getGithubPrStatus());
 		taskResponse.setIsIntegrated(task.getIsIntegrated());
 		taskResponse.setGithubPullRequestLink(task.getGithubPullRequestLink());
 		if (task.getTaskId() != null) {
@@ -221,4 +229,6 @@ public class TaskService {
 		return taskToTaskResponse(task);
 
 	}
+	
+	
 }

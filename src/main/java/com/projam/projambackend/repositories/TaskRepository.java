@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.dto.TaskAssignmentSummaryDto;
 import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Task;
@@ -47,8 +48,11 @@ public interface TaskRepository extends JpaRepository<Task, String> {
 	@Query("SELECT new com.projam.projambackend.dto.TaskAssignmentSummaryDto(t.taskId, t.title, t.status, t.taskKey, t.taskColumn.taskColumnColor) FROM Task t WHERE t.project.projectId = :projectId AND t.assignee.memberGmail = :email")
 	List<TaskAssignmentSummaryDto> getTaskByProjectAndAdmin(@Param("projectId") String projectId, @Param("email") String email);
 	
-	@Query("SELECT COUNT(DISTINCT t.assignedTo.id) FROM Task t WHERE t.project.projectId = :projectId AND t.assignedTo IS NOT NULL")
-	int countActiveMembersByProjectId(@Param("projectId") String projectId);
+	@Query("SELECT COUNT(DISTINCT t.assignedTo.id) FROM Task t WHERE t.project.projectId = :projectId AND t.assignedAt >= :startOfDay AND t.assignedAt < :endOfDay AND t.assignedTo IS NOT NULL")
+	int countActiveMembersByProjectIdAndToday(@Param("projectId") String projectId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
+	
+	@Query("SELECT DISTINCT new com.projam.projambackend.dto.MemberResponse(ao.memberId, ao.memberName, ao.memberGmail, ao.memberJoinDate) FROM Task t JOIN t.assignedTo ao WHERE t.project.projectId = :projectId AND t.assignedAt >= :startOfDay AND t.assignedAt < :endOfDay")
+	List<MemberResponse> getActiveMembersByToday(@Param("projectId") String projectId, @Param("startOfDay") LocalDateTime startOfDay, @Param("endOfDay") LocalDateTime endOfDay);
 	
 	@Query("SELECT COUNT(DISTINCT t.taskId) FROM Task t WHERE t.project.projectId = :projectId AND t.assignedTo.memberGmail = :email AND t.assignedAt BETWEEN :start AND :end")
 	int countByProjectIdAndEmailAndAssignedAtBetween(@Param("projectId") String projectId, @Param("email") String email, @Param("start") LocalDateTime start, @Param("end") LocalDateTime end);

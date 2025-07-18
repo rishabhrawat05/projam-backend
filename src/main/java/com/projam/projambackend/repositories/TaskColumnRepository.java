@@ -16,6 +16,7 @@ public interface TaskColumnRepository extends JpaRepository<TaskColumn, String>{
 	@Query("SELECT tc FROM TaskColumn tc WHERE tc.project.projectId = :projectId ORDER BY tc.taskColumnIndex")
 	List<TaskColumn> findAllByProject_ProjectId(String projectId);
 	
+	int countByProject_ProjectId(String projectId);
 	
 	
 	

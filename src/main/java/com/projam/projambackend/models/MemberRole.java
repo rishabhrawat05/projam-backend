@@ -1,9 +1,12 @@
 package com.projam.projambackend.models;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -23,19 +26,22 @@ public class MemberRole {
 
     @Column(name = "role_name", nullable = false)
     private String roleName;
+    
+    @Column(name = "role_color")
+    private String roleColor;
 
     @ManyToMany(mappedBy = "memberRole")
     private Set<Tag> tags;
 
-    @OneToMany(mappedBy = "memberRole", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "memberRole", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Task> tasks;
 
-    @ManyToOne
-    @JoinColumn(name = "member_id")
-    private Member member;
+    @ManyToMany(mappedBy = "memberRoles")
+    private Set<Member> members = new HashSet<>();
     
     @ManyToOne  
     @JoinColumn(name = "project_id")  
+    @JsonIgnore
     private Project project;  
 
     @Column(nullable = false)
@@ -64,6 +70,12 @@ public class MemberRole {
 
     @Column(nullable = false)
     private boolean canDeleteColumn;
+    
+    @Column(nullable = false)
+    private boolean canManageRolesAndPermission;
+    
+    @Column(nullable = false)
+    private boolean canManageGithub;
 
     public MemberRole() {
         this.memberRoleId = NanoIdUtils.randomNanoId();
@@ -102,12 +114,12 @@ public class MemberRole {
         this.tasks = tasks;
     }
 
-    public Member getMember() {
-        return member;
+    public Set<Member> getMember() {
+        return members;
     }
 
-    public void setMember(Member member) {
-        this.member = member;
+    public void setMember(Set<Member> members) {
+        this.members = members;
     }
 
     public boolean isCanCreateTask() {
@@ -190,6 +202,53 @@ public class MemberRole {
 	public void setProject(Project project) {
 		this.project = project;
 	}
-    
-    
+
+
+	public String getRoleColor() {
+		return roleColor;
+	}
+
+	public void setRoleColor(String roleColor) {
+		this.roleColor = roleColor;
+	}
+	
+	public void addMember(Member member) {
+		if(member != null) {
+			this.members.add(member);
+		}
+		
+	}
+
+
+	public Set<Member> getMembers() {
+		return members;
+	}
+
+
+	public void setMembers(Set<Member> members) {
+		this.members = members;
+	}
+
+
+	public boolean isCanManageRolesAndPermission() {
+		return canManageRolesAndPermission;
+	}
+
+
+	public void setCanManageRolesAndPermission(boolean canManageRolesAndPermission) {
+		this.canManageRolesAndPermission = canManageRolesAndPermission;
+	}
+
+
+	public boolean isCanManageGithub() {
+		return canManageGithub;
+	}
+
+
+	public void setCanManageGithub(boolean canManageGithub) {
+		this.canManageGithub = canManageGithub;
+	}
+	
+	
+	
 }

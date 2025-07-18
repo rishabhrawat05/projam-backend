@@ -1,10 +1,14 @@
 package com.projam.projambackend.controllers;
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.projam.projambackend.dto.GoogleLoginRequest;
 import com.projam.projambackend.dto.LoginRequest;
 import com.projam.projambackend.dto.RefreshTokenRequest;
 import com.projam.projambackend.dto.ResendOtpRequest;
@@ -18,6 +22,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class AuthenticationController {
 
 	private AuthenticationService authenticationService;
+	
 	
 	public AuthenticationController(AuthenticationService authenticationService) {
 		this.authenticationService = authenticationService;
@@ -47,6 +52,18 @@ public class AuthenticationController {
 	public ResponseEntity<?> generateRefreshToken(@RequestBody RefreshTokenRequest refreshTokenRequest){
 		return ResponseEntity.ok(authenticationService.generateRefreshToken(refreshTokenRequest));
 	}
+	
+	@PostMapping("/google-login")
+	public ResponseEntity<?> googleLogin(@RequestBody GoogleLoginRequest googleLoginRequest, HttpServletResponse response){
+		return ResponseEntity.ok(authenticationService.googleLogin(googleLoginRequest.getAccessToken(), response));
+	}
+	
+	@PostMapping("/github-login")
+	public ResponseEntity<?> githubLogin(@RequestBody Map<String, String> request, HttpServletResponse response) {
+	    String code = request.get("code");
+	    return ResponseEntity.ok(authenticationService.githubLogin(code, response));
+	}
+
 	
 	
 }

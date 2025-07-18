@@ -3,6 +3,8 @@ package com.projam.projambackend.models;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -27,7 +29,7 @@ public class TaskColumn {
 	@Column(name = "task_col_slug")
 	private String taskColumnSlug;
 	
-	@OneToMany(mappedBy = "taskColumn")
+	@OneToMany(mappedBy = "taskColumn", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Task> tasks;
 	
 	@ManyToOne

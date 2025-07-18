@@ -76,6 +76,8 @@ public class WeeklyProgressService {
 		else {
 			weeklyProgress.setWeeklyProgessPercent(getWeeklyProgressUser(projectId, email));
 		}
+		project.getWeeklyProgress().add(weeklyProgress);
+		projectRepository.save(project);
 		weeklyProgressRepository.save(weeklyProgress);
 	}
 	

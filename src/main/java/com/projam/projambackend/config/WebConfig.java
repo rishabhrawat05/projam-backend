@@ -31,7 +31,7 @@ public class WebConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
     	http.csrf(csrf -> csrf.disable())
     	.cors(Customizer.withDefaults())
-    	.authorizeHttpRequests(auth -> auth.requestMatchers("/projam/auth/**", "/projam/github/**", "/projam/workspace/join/**").permitAll().anyRequest().authenticated())
+    	.authorizeHttpRequests(auth -> auth.requestMatchers("/projam/auth/**", "/projam/github/**", "/projam/workspace/join/**", "/projam/project/join/**").permitAll().anyRequest().authenticated())
     	.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     	.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
     	return http.build();

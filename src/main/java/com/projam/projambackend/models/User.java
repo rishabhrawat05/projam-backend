@@ -63,7 +63,7 @@ public class User implements UserDetails{
 			joinColumns = @JoinColumn(name = "user_id"),
 			inverseJoinColumns = @JoinColumn(name = "role_id")
 			)
-	private Set<Role> roles;
+	private Set<Role> roles = new HashSet<>();
 	
 	@Column(name = "otp_generated_time", nullable = false)
 	private LocalDateTime otpGeneratedTime;

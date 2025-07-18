@@ -17,14 +17,14 @@ import com.projam.projambackend.models.Member;
 @Repository
 public interface MemberRepository extends JpaRepository<Member, String> {
 
-	@Query("SELECT new com.projam.projambackend.dto.MemberResponse(" + "m.memberName, " + "m.memberGmail, "
+	@Query("SELECT new com.projam.projambackend.dto.MemberResponse(" + "m.memberId, " + "m.memberName, " + "m.memberGmail, "
 			+ "m.memberJoinDate) " + "FROM Member m " + "JOIN m.workspace w " + "WHERE w.workspaceId = :workspaceId "
-			+ "GROUP BY m.memberName, m.memberGmail, m.memberJoinDate")
+			+ "GROUP BY m.memberId, m.memberName, m.memberGmail, m.memberJoinDate")
 	Page<MemberResponse> findAllMemberByWorkspaceId(@Param("workspaceId") String workspaceId, Pageable pageable);
 	
-	@Query("SELECT new com.projam.projambackend.dto.MemberResponse(" + "m.memberName, " + "m.memberGmail, "
+	@Query("SELECT new com.projam.projambackend.dto.MemberResponse(" + "m.memberId, " + "m.memberName, " + "m.memberGmail, "
 			+ "m.memberJoinDate) " + "FROM Member m " + "JOIN m.projects p " + "WHERE p.projectId = :projectId "
-			+ "GROUP BY m.memberName, m.memberGmail, m.memberJoinDate")
+			+ "GROUP BY  m.memberId, m.memberName, m.memberGmail, m.memberJoinDate")
 	Page<MemberResponse> findAllMemberByProjectId(@Param("projectId") String projectId, Pageable pageable);
 	
 	@Query("SELECT m FROM Member m JOIN m.projects p WHERE m.memberGmail = :memberGmail AND p.projectId = :projectId")
@@ -39,11 +39,11 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 	@Query("SELECT m FROM Member m JOIN m.projects p WHERE p.projectId = :projectId")
 	List<Member> findAllByProjectId(@Param("projectId") String projectId);
 	
-	@Query("SELECT new com.projam.projambackend.dto.MemberResponse( m.memberName, m.memberGmail, m.memberJoinDate) " +
+	@Query("SELECT new com.projam.projambackend.dto.MemberResponse(m.memberId, m.memberName, m.memberGmail, m.memberJoinDate) " +
 		       "FROM Member m JOIN m.projects p " +
 		       "WHERE p.projectId = :projectId AND (LOWER(m.memberName) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
 		       "OR LOWER(m.memberGmail) LIKE LOWER(CONCAT('%', :keyword, '%')))")
-		List<MemberResponse> getAllMembersByKeyword(@Param("keyword") String keyword, @Param("projectId") String projectId);
+	List<MemberResponse> getAllMembersByKeyword(@Param("keyword") String keyword, @Param("projectId") String projectId);
 
 
 }

@@ -1,6 +1,7 @@
 package com.projam.projambackend.dto;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 import com.projam.projambackend.enums.ProjectStatus;
 
@@ -15,6 +16,8 @@ public class ProjectResponse {
 	private LocalDate startDate;
 
 	private LocalDate endDate;
+	
+	private Date deletionMarkedAt;
 
 	private ProjectStatus projectStatus;
 
@@ -70,15 +73,26 @@ public class ProjectResponse {
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
 	}
+	
+	
+
+	public Date getDeletionMarkedAt() {
+		return deletionMarkedAt;
+	}
+
+	public void setDeletionMarkedAt(Date deletionMarkedAt) {
+		this.deletionMarkedAt = deletionMarkedAt;
+	}
 
 	public ProjectResponse(String projectId, String projectName, Boolean isPrivate, LocalDate startDate, LocalDate endDate,
-			ProjectStatus projectStatus) {
+			ProjectStatus projectStatus, Date deletionMarkedAt) {
 		this.projectId = projectId;
 		this.projectName = projectName;
 		this.isPrivate = isPrivate;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.projectStatus = projectStatus;
+		this.deletionMarkedAt = deletionMarkedAt;
 	}
 
 }

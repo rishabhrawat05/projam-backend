@@ -1,10 +1,15 @@
 package com.projam.projambackend.models;
 
+import java.time.LocalDateTime;
+
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
@@ -15,14 +20,20 @@ public class Comment {
 	@Id
 	private String commentId;
 	
-	@Column(name = "comment_description", nullable = false)
+	@Lob
+	@Column(name = "comment_description", nullable = false, columnDefinition = "TEXT")
 	private String commentDescription;
 	
 	@ManyToOne
+	@JoinColumn(name = "task_task_id", nullable = false)
+	@JsonIgnore
 	private Task task;
 	
-	@Column(name = "user_gmail", nullable = false)
-	private String userGmail;
+	@ManyToOne
+	private Member member;
+	
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
 
 	public String getCommentId() {
 		return commentId;
@@ -48,14 +59,23 @@ public class Comment {
 		this.task = task;
 	}
 
-	public String getUserGmail() {
-		return userGmail;
+	public Member getMember() {
+		return member;
 	}
 
-	public void setUserGmail(String userGmail) {
-		this.userGmail = userGmail;
+	public void setMember(Member member) {
+		this.member = member;
 	}
 	
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
 	public Comment() {
 		this.commentId = NanoIdUtils.randomNanoId();
 	}

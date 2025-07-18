@@ -1,6 +1,7 @@
 package com.projam.projambackend.dto;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Set;
 
 public class TaskResponse {
@@ -28,14 +29,20 @@ public class TaskResponse {
 	private String githubIssueLink;
 	
 	private String githubRepoName;
-	
-	private String githubStatus;
+
+	private String githubIssueStatus;
+
+	private String githubPrStatus;
 	
 	private Boolean isIntegrated;
 	
 	private String githubPullRequestLink;
 	
 	private Set<TagRequest> tags;
+	
+	private Integer priority;
+	
+	private LocalDateTime createdAt;
 
 	public String getTitle() {
 		return title;
@@ -145,12 +152,22 @@ public class TaskResponse {
 		this.githubRepoName = githubRepoName;
 	}
 
-	public String getGithubStatus() {
-		return githubStatus;
+	
+
+	public String getGithubIssueStatus() {
+		return githubIssueStatus;
 	}
 
-	public void setGithubStatus(String githubStatus) {
-		this.githubStatus = githubStatus;
+	public void setGithubIssueStatus(String githubIssueStatus) {
+		this.githubIssueStatus = githubIssueStatus;
+	}
+
+	public String getGithubPrStatus() {
+		return githubPrStatus;
+	}
+
+	public void setGithubPrStatus(String githubPrStatus) {
+		this.githubPrStatus = githubPrStatus;
 	}
 
 	public Boolean getIsIntegrated() {
@@ -170,6 +187,27 @@ public class TaskResponse {
 		this.githubPullRequestLink = githubPullRequestLink;
 	}
 
+	
+	
+	
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
+	
+	
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+
 	/**
 	 * @param taskId
 	 * @param title
@@ -179,10 +217,20 @@ public class TaskResponse {
 	 * @param assignee
 	 * @param assignedTo
 	 * @param status
+	 * @param taskNumber
+	 * @param taskKey
+	 * @param githubIssueLink
+	 * @param githubRepoName
+	 * @param githubIssueStatus
+	 * @param githubPrStatus
+	 * @param isIntegrated
+	 * @param githubPullRequestLink
 	 * @param tags
 	 */
 	public TaskResponse(String taskId, String title, String description, LocalDate startDate, LocalDate endDate,
-			MemberResponse assignee, MemberResponse assignedTo, String status, Set<TagRequest> tags, Integer taskNumber, String taskKey, String githubIssueLink, String githubRepoName, String githubStatus, Boolean isIntegrated, String githubPullRequestLink) {
+			MemberResponse assignee, MemberResponse assignedTo, String status, Integer taskNumber, String taskKey,
+			String githubIssueLink, String githubRepoName, String githubIssueStatus, String githubPrStatus,
+			Boolean isIntegrated, String githubPullRequestLink, Set<TagRequest> tags, Integer priority, LocalDateTime createdAt) {
 		this.taskId = taskId;
 		this.title = title;
 		this.description = description;
@@ -191,16 +239,19 @@ public class TaskResponse {
 		this.assignee = assignee;
 		this.assignedTo = assignedTo;
 		this.status = status;
-		this.tags = tags;
 		this.taskNumber = taskNumber;
 		this.taskKey = taskKey;
 		this.githubIssueLink = githubIssueLink;
 		this.githubRepoName = githubRepoName;
-		this.githubStatus = githubStatus;
+		this.githubIssueStatus = githubIssueStatus;
+		this.githubPrStatus = githubPrStatus;
 		this.isIntegrated = isIntegrated;
 		this.githubPullRequestLink = githubPullRequestLink;
+		this.tags = tags;
+		this.priority = priority;
+		this.createdAt = createdAt;
 	}
-	
+
 	public TaskResponse() {
 		
 	}

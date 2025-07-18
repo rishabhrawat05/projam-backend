@@ -10,6 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -40,8 +41,13 @@ public class Member {
 	@OneToMany(mappedBy = "member",  cascade = CascadeType.ALL)
 	private Set<Activity> activities;
 	
-	@OneToMany(mappedBy = "member",  cascade = CascadeType.ALL)
-	private Set<MemberRole> memberRole;
+	@ManyToMany
+	@JoinTable(
+	    name = "member_member_role",
+	    joinColumns = @JoinColumn(name = "member_id"),
+	    inverseJoinColumns = @JoinColumn(name = "member_role_id")
+	)
+	private Set<MemberRole> memberRoles;
 	
 	@ManyToOne
 	@JoinColumn(name = "workspace_id")
@@ -99,11 +105,11 @@ public class Member {
 	}
 
 	public Set<MemberRole> getMemberRole() {
-		return memberRole;
+		return memberRoles;
 	}
 
-	public void setMemberRole(Set<MemberRole> memberRole) {
-		this.memberRole = memberRole;
+	public void setMemberRole(Set<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
 	}
 
 	public Workspace getWorkspace() {
@@ -139,11 +145,11 @@ public class Member {
 	}
 	
 	public void addMemberRole(MemberRole memberRole) {
-		this.memberRole.add(memberRole);
+		this.memberRoles.add(memberRole);
 	}
 	
 	public void removeMemberRole(MemberRole memberRole) {
-		this.memberRole.remove(memberRole);
+		this.memberRoles.remove(memberRole);
 	}
 	
 	public void addAssignedTask(Task task) {

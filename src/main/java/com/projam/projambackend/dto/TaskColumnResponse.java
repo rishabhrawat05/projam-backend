@@ -1,5 +1,6 @@
 package com.projam.projambackend.dto;
 
+import java.util.List;
 import java.util.Set;
 
 public class TaskColumnResponse {
@@ -14,7 +15,7 @@ public class TaskColumnResponse {
 	
 	private int taskColumnIndex;
 	
-	private Set<TaskResponse> tasks;
+	private List<TaskResponse> tasks;
 
 	public String getTaskColumnName() {
 		return taskColumnName;
@@ -48,11 +49,11 @@ public class TaskColumnResponse {
 		this.projectId = projectId;
 	}
 
-	public Set<TaskResponse> getTasks() {
+	public List<TaskResponse> getTasks() {
 		return tasks;
 	}
 
-	public void setTasks(Set<TaskResponse> tasks) {
+	public void setTasks(List<TaskResponse> tasks) {
 		this.tasks = tasks;
 	}
 

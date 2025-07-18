@@ -9,6 +9,8 @@ public class TaskColumnRequest {
 	private String workspaceId;
 	
 	private String projectId;
+	
+	private String memberGmail;
 
 	public String getTaskColumnName() {
 		return taskColumnName;
@@ -40,6 +42,14 @@ public class TaskColumnRequest {
 
 	public void setProjectId(String projectId) {
 		this.projectId = projectId;
+	}
+
+	public String getMemberGmail() {
+		return memberGmail;
+	}
+
+	public void setMemberGmail(String memberGmail) {
+		this.memberGmail = memberGmail;
 	}
 	
 	

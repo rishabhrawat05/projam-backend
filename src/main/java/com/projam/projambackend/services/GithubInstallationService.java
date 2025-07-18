@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -18,11 +19,14 @@ import org.springframework.web.client.RestTemplate;
 
 import com.projam.projambackend.dto.GithubInstallationResponse;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
+import com.projam.projambackend.models.GithubAutomation;
 import com.projam.projambackend.models.GithubInstallation;
 import com.projam.projambackend.models.Project;
+import com.projam.projambackend.models.TaskColumn;
 import com.projam.projambackend.models.Workspace;
 import com.projam.projambackend.repositories.GithubInstallationRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
+import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
 
 import io.jsonwebtoken.Jwts;
@@ -35,15 +39,18 @@ public class GithubInstallationService {
 	private final GithubInstallationRepository githubInstallationRepository;
 	private final ProjectRepository projectRepository;
 	private final WorkspaceRepository workspaceRepository;
+	private final TaskColumnRepository taskColumnRepository;
 
 	@Value("${github.app.id}")
 	private String githubAppId;
 
 	public GithubInstallationService(GithubInstallationRepository githubInstallationRepository,
-			ProjectRepository projectRepository, WorkspaceRepository workspaceRepository) {
+			ProjectRepository projectRepository, WorkspaceRepository workspaceRepository,
+			TaskColumnRepository taskColumnRepository) {
 		this.githubInstallationRepository = githubInstallationRepository;
 		this.projectRepository = projectRepository;
 		this.workspaceRepository = workspaceRepository;
+		this.taskColumnRepository = taskColumnRepository;
 	}
 
 	public RSAPrivateKey loadPrivateKey() throws Exception {
@@ -95,7 +102,6 @@ public class GithubInstallationService {
 		if (githubInstallationRepository.existsByWorkspace(workspace)) {
 			throw new RuntimeException("This workspace already has a GitHub installation linked.");
 		}
-
 
 		String jwt = generateGitHubAppJWT();
 
@@ -197,6 +203,47 @@ public class GithubInstallationService {
 		project.setGithubInstallation(installation);
 		project.setLinkedRepoName(repoName);
 		project.setLinkedRepoOwner(repoOwner);
+
+		List<GithubAutomation> newEdges = List.of(new GithubAutomation("pr-opened", "inprogress-1", "#fcd34d", project),
+				new GithubAutomation("pr-closed", "todo-0", "#4e8de5", "not_merged", project),
+				new GithubAutomation("pr-closed", "completed-2", "#56c596", "merged", project),
+				new GithubAutomation("issue-opened", "todo-0", "#4e8de5", project),
+				new GithubAutomation("review-requested", "inreview-3", "#b894fc", project),
+				new GithubAutomation("pr-reopened", "inprogress-1", "#fcd34d", project),
+				new GithubAutomation("pr-approved", "readytomerge-4", "#b894fc", project),
+				new GithubAutomation("issue-closed", "completed-2", "#56c596", project));
+		project.getEdges().clear();
+		project.getEdges().addAll(newEdges);
+
+		Optional<TaskColumn> inReviewOpt = taskColumnRepository.findByTaskColumnSlugAndProject_ProjectId("inreview",
+				projectId);
+
+		if (inReviewOpt.isEmpty()) {
+			TaskColumn inReview = new TaskColumn();
+			inReview.setProject(project);
+			inReview.setTaskColumnColor("bg-ppurple-light");
+			inReview.setTaskColumnIndex(taskColumnRepository.countByProject_ProjectId(projectId)+1);
+			inReview.setTaskColumnName("In Review");
+			inReview.setTaskColumnSlug("inreview");
+			inReview.setWorkspace(project.getWorkspace());
+			taskColumnRepository.save(inReview);
+		}
+
+		Optional<TaskColumn> inReadyToMergeOpt = taskColumnRepository.findByTaskColumnSlugAndProject_ProjectId("readytomerge",
+				projectId);
+
+		if (inReadyToMergeOpt.isEmpty()) {
+			TaskColumn readyToMerge = new TaskColumn();
+			readyToMerge.setProject(project);
+			readyToMerge.setTaskColumnColor("bg-ppurple-light");
+			readyToMerge.setTaskColumnIndex(taskColumnRepository.countByProject_ProjectId(projectId)+1);
+			readyToMerge.setTaskColumnName("Ready To Merge");
+			readyToMerge.setTaskColumnSlug("readytomerge");
+			readyToMerge.setWorkspace(project.getWorkspace());
+			taskColumnRepository.save(readyToMerge);
+		}
+		
+		
 
 		projectRepository.save(project);
 	}

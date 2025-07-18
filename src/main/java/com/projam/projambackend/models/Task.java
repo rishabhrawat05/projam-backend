@@ -2,8 +2,12 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Set;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -26,7 +30,7 @@ public class Task {
 	private String title;
 	
 	@Lob
-	@Column(name = "description", nullable = false)
+	@Column(name = "description", nullable = false, columnDefinition = "TEXT")
 	private String description;
 	
 	@Column(name = "start_date")
@@ -48,6 +52,7 @@ public class Task {
 	
 	@ManyToOne
 	@JoinColumn(name = "project_id")
+	@JsonIgnore
 	private Project project;
 	
 	@Column(nullable = false)
@@ -62,33 +67,42 @@ public class Task {
 	@Column(name = "completed_at")
 	private LocalDateTime completedAt;
 	
+	@Column(name = "priority")
+	private Integer priority;
+	
+	@Column(name = "created_at")
+	private LocalDateTime createdAt;
+	
 	@ManyToMany
 	@JoinTable(
 	    name = "task_tags",
 	    joinColumns = @JoinColumn(name = "task_id"),
 	    inverseJoinColumns = @JoinColumn(name = "tag_id")
 	)
-	private Set<Tag> tags;
+	private Set<Tag> tags = new HashSet<>();
 	
-	@OneToMany(mappedBy = "task")
+	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
 	private Set<Activity> activities;
 	
-	@OneToMany(mappedBy = "task")
-	private Set<Comment> comments;
+	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+	private Set<Comment> comments = new HashSet<Comment>();
 	
 	@ManyToOne
 	@JoinColumn(name = "member_role_id")
 	private MemberRole memberRole;
 	
 	@ManyToOne
-	@JoinColumn(name = "task_column_id")
+	@JoinColumn(name = "task_column_id", nullable = true)
 	private TaskColumn taskColumn;
 	
 	@Column(name = "github_issue_link")
 	private String githubIssueLink;
 	
-	@Column(name = "github_status")
-	private String githubStatus;
+	@Column(name = "github_issue_status")
+	private String githubIssueStatus;
+
+	@Column(name = "github_pr_status")
+	private String githubPrStatus;
 	
 	@Column(name = "github_repo_name")
 	private String githubRepoName;
@@ -239,12 +253,22 @@ public class Task {
 		this.githubIssueLink = githubIssueLink;
 	}
 
-	public String getGithubStatus() {
-		return githubStatus;
+	
+
+	public String getGithubIssueStatus() {
+		return githubIssueStatus;
 	}
 
-	public void setGithubStatus(String githubStatus) {
-		this.githubStatus = githubStatus;
+	public void setGithubIssueStatus(String githubIssueStatus) {
+		this.githubIssueStatus = githubIssueStatus;
+	}
+
+	public String getGithubPrStatus() {
+		return githubPrStatus;
+	}
+
+	public void setGithubPrStatus(String githubPrStatus) {
+		this.githubPrStatus = githubPrStatus;
 	}
 
 	public String getGithubRepoName() {
@@ -291,5 +315,24 @@ public class Task {
 	public Task() {
 		this.taskId = NanoIdUtils.randomNanoId();
 	}
+
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
+
+	public LocalDateTime getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(LocalDateTime createdAt) {
+		this.createdAt = createdAt;
+	}
+	
+	
+	
 	
 }

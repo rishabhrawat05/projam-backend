@@ -19,9 +19,11 @@ public class TaskRequest {
 	
 	private String status;
 	
-	private Set<TagRequest> tags;
+	private Set<TagResponse> tags;
 
 	private String taskColumnSlug;
+	
+	private Integer priority;
 	
 	public String getTitle() {
 		return title;
@@ -79,11 +81,11 @@ public class TaskRequest {
 		this.status = status;
 	}
 
-	public Set<TagRequest> getTags() {
+	public Set<TagResponse> getTags() {
 		return tags;
 	}
 
-	public void setTags(Set<TagRequest> tags) {
+	public void setTags(Set<TagResponse> tags) {
 		this.tags = tags;
 	}
 
@@ -94,6 +96,15 @@ public class TaskRequest {
 	public void setTaskColumnSlug(String taskColumnSlug) {
 		this.taskColumnSlug = taskColumnSlug;
 	}
+
+	public Integer getPriority() {
+		return priority;
+	}
+
+	public void setPriority(Integer priority) {
+		this.priority = priority;
+	}
+	
 	
 	
 }
