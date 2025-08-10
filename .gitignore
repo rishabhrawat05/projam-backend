@@ -34,3 +34,7 @@ build/
 
 # Ignore sensitive configs
 application-dev.properties
+
+# Private keys for GitHub App
+github-app-private-key.pem
+github-app-private-key-pkcs8.pem
