@@ -41,7 +41,7 @@ public class WebConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
+		http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.authorizeHttpRequests(
 						auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
@@ -66,7 +66,7 @@ public class WebConfig {
 	    CorsConfiguration configuration = new CorsConfiguration();
 	    configuration.setAllowedOrigins(List.of(frontendUrl));
 	    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	    configuration.setAllowedHeaders(List.of("*"));
+	    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
 	    configuration.setAllowCredentials(true);
 	    configuration.setMaxAge(3600L);
 
