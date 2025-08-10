@@ -1,6 +1,6 @@
 package com.projam.projambackend.config;
 
-
+import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import com.projam.projambackend.jwt.JwtAuthenticationFilter;
 
@@ -30,9 +31,6 @@ public class WebConfig {
 
 	private final JwtAuthenticationFilter jwtAuthFilter;
 	private final RateLimitFilterConfig rateLimitFilter;
-	
-	@Value("${frontend.url}")
-	private String frontendUrl;
 
 	public WebConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilterConfig rateLimitFilter) {
 		this.jwtAuthFilter = jwtAuthFilter;
@@ -41,14 +39,12 @@ public class WebConfig {
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-		http.csrf(csrf -> csrf.disable()).cors(cors -> cors.configurationSource(corsConfigurationSource()))
-				.authorizeHttpRequests(
-						auth -> auth
-						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-								.requestMatchers("/projam/auth/**", "/projam/github/link-installation",
-										"/projam/github/repos", "/projam/github/is-connected", "/projam/github/webhook",
-										"/projam/workspace/join/**", "/projam/project/join/**")
-								.permitAll().anyRequest().authenticated())
+		http.csrf(csrf -> csrf.disable())
+				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+						.requestMatchers("/projam/auth/**", "/projam/github/link-installation", "/projam/github/repos",
+								"/projam/github/is-connected", "/projam/github/webhook", "/projam/workspace/join/**",
+								"/projam/project/join/**")
+						.permitAll().anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 				.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
 				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
@@ -62,19 +58,26 @@ public class WebConfig {
 	}
 
 	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-	    CorsConfiguration configuration = new CorsConfiguration();
-	    configuration.setAllowedOrigins(List.of(frontendUrl));
-	    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-	    configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
-	    configuration.setAllowCredentials(true);
-	    configuration.setMaxAge(3600L);
+	public CorsFilter corsFilter() {
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-	    source.registerCorsConfiguration("/**", configuration);
-	    return source;
+		CorsConfiguration config = new CorsConfiguration();
+		config.setAllowCredentials(true);
+		config.addAllowedOriginPattern("http://localhost:5173");
+		config.addAllowedOriginPattern("http://localhost:3000");
+		config.addAllowedOriginPattern("https://yellow-meadow-03c023200.1.azurestaticapps.net");
+		config.addAllowedOriginPattern("https://*.vercel.app");
+
+		config.setAllowedHeaders(Arrays.asList("Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With",
+				"Access-Control-Allow-Origin"));
+
+		config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+		config.setMaxAge(3600L);
+
+		source.registerCorsConfiguration("/**", config);
+		return new CorsFilter(source);
 	}
-
 
 
 	@Bean
