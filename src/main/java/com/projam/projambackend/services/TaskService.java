@@ -1,44 +1,43 @@
 package com.projam.projambackend.services;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.dto.TagRequest;
 import com.projam.projambackend.dto.TagResponse;
 import com.projam.projambackend.dto.TaskRequest;
 import com.projam.projambackend.dto.TaskResponse;
+import com.projam.projambackend.dto.TaskSearchRequest;
 import com.projam.projambackend.dto.TaskStatusDto;
 import com.projam.projambackend.enums.ProjectStatus;
 import com.projam.projambackend.exceptions.MemberNotAuthorizedException;
 import com.projam.projambackend.exceptions.MemberNotFoundException;
-import com.projam.projambackend.exceptions.MemberRoleNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
 import com.projam.projambackend.exceptions.TaskColumnNotFoundException;
 import com.projam.projambackend.exceptions.TaskNotFoundException;
 import com.projam.projambackend.models.Activity;
 import com.projam.projambackend.models.Member;
-import com.projam.projambackend.models.MemberRole;
 import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Tag;
 import com.projam.projambackend.models.Task;
 import com.projam.projambackend.models.TaskColumn;
 import com.projam.projambackend.repositories.ActivityRepository;
 import com.projam.projambackend.repositories.MemberRepository;
-import com.projam.projambackend.repositories.MemberRoleRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.TagRepository;
 import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.TaskRepository;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -54,19 +53,16 @@ public class TaskService {
 
 	private final TagRepository tagRepository;
 
-	private final MemberRoleRepository memberRoleRepository;
-
 	private final TaskColumnRepository taskColumnRepository;
 
 	public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository,
 			ActivityRepository activityRepository, MemberRepository memberRepository, TagRepository tagRepository,
-			MemberRoleRepository memberRoleRepository, TaskColumnRepository taskColumnRepository) {
+			TaskColumnRepository taskColumnRepository) {
 		this.taskRepository = taskRepository;
 		this.projectRepository = projectRepository;
 		this.activityRepository = activityRepository;
 		this.memberRepository = memberRepository;
 		this.tagRepository = tagRepository;
-		this.memberRoleRepository = memberRoleRepository;
 		this.taskColumnRepository = taskColumnRepository;
 	}
 
@@ -81,11 +77,11 @@ public class TaskService {
 		Member assigneeMember = memberRepository
 				.findByMemberGmailAndProjectId(taskRequest.getAssignee().getMemberGmail(), projectId)
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
-		
-		if(!assigneeMember.getMemberRole().stream().anyMatch(role -> role.isCanCreateTask())) {
+
+		if (!assigneeMember.getMemberRole().stream().anyMatch(role -> role.isCanCreateTask())) {
 			throw new MemberNotAuthorizedException("Member Not Authorized To Create Task");
 		}
-		
+
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		TaskColumn taskColumn = taskColumnRepository
@@ -100,8 +96,9 @@ public class TaskService {
 		task.setAssignee(assigneeMember);
 		task.setAssignedTo(assignedToMember);
 		task.setPriority(taskRequest.getPriority());
+		task.setIsDeleted(false);
 		task.setCreatedAt(LocalDateTime.now());
-		if(assignedToMember != null) {
+		if (assignedToMember != null) {
 			task.setAssignedAt(LocalDateTime.now());
 		}
 		assigneeMember.addTaskAssignedTo(task);
@@ -114,13 +111,13 @@ public class TaskService {
 		String taskKey = projectPrefix + "-" + task.getTaskNumber();
 		task.setTaskKey(taskKey);
 
-		Set<TagResponse> tagRequests = taskRequest.getTags();
+		List<TagResponse> tagRequests = taskRequest.getTags();
 		if (tagRequests != null) {
-		    for (TagResponse tagR : tagRequests) {
-		        Tag tag = tagRepository.findById(tagR.getTagId())
-		                .orElseThrow(() -> new RuntimeException("Tag not found"));
-		        task.addTag(tag);
-		    }
+			for (TagResponse tagR : tagRequests) {
+				Tag tag = tagRepository.findById(tagR.getTagId())
+						.orElseThrow(() -> new RuntimeException("Tag not found"));
+				task.addTag(tag);
+			}
 		}
 		taskRepository.save(task);
 		memberRepository.saveAll(List.of(assigneeMember, assignedToMember));
@@ -132,12 +129,11 @@ public class TaskService {
 		activity.setTask(task);
 		activity.setMember(assigneeMember);
 		activityRepository.save(activity);
-		
-		if(taskRepository.countByProject(project) >= 1) {
+
+		if (taskRepository.countByProject(project) >= 1) {
 			project.setProjectStatus(ProjectStatus.IN_PROGRESS);
 			projectRepository.save(project);
 		}
-		
 
 		return taskToTaskResponse(task);
 	}
@@ -168,12 +164,13 @@ public class TaskService {
 		taskResponse.setGithubPrStatus(task.getGithubPrStatus());
 		taskResponse.setIsIntegrated(task.getIsIntegrated());
 		taskResponse.setGithubPullRequestLink(task.getGithubPullRequestLink());
+		taskResponse.setTaskColumnId(task.getTaskColumn().getTaskColumnId());
 		if (task.getTaskId() != null) {
 			taskResponse.setTaskId(task.getTaskId());
 		}
-		Set<Tag> tags = task.getTags();
+		List<Tag> tags = task.getTags();
 		if (tags != null) {
-			Set<TagRequest> tagResponse = new HashSet<>();
+			List<TagRequest> tagResponse = new ArrayList<>();
 			for (Tag tag : tags) {
 				TagRequest tagR = new TagRequest();
 				tagR.setTitle(tag.getTitle());
@@ -197,12 +194,11 @@ public class TaskService {
 		Task task = taskRepository.findByIdAndProjectId(taskStatusDto.getTaskId(), projectId)
 				.orElseThrow(() -> new TaskNotFoundException("Task Not Found"));
 		task.setStatus(taskStatusDto.getStatus());
-		if(taskStatusDto.getStatus().equals("completed")) {
+		if (taskStatusDto.getStatus().equals("completed")) {
 			task.setCompletedAt(LocalDateTime.now());
 		}
 		Activity activity = new Activity();
-		activity.setDescription(
-				task.getTaskKey() + " status has been updated to " + taskStatusDto.getStatus());
+		activity.setDescription(task.getTaskKey() + " status has been updated to " + taskStatusDto.getStatus());
 		activity.setTimeStamp(LocalDateTime.now());
 		activity.setProject(projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found")));
@@ -229,6 +225,90 @@ public class TaskService {
 		return taskToTaskResponse(task);
 
 	}
+
+	public Page<TaskResponse> getPaginatedTasks(String columnId, String projectId, int page, int size) {
+		Pageable pageable = PageRequest.of(page, size);
+		Page<Task> tasks = taskRepository.findAllByTaskColumn_TaskColumnIdAndTaskColumn_Project_ProjectId(columnId,
+				projectId, pageable);
+		return tasks.map(this::taskToTaskResponse);
+	}
+
+	public void deleteTask(String taskId) {
+		Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Task Not Found"));
+		task.setIsDeleted(true);
+		taskRepository.save(task);
+	}
+
+	public List<String> suggestTitleByProjectId(String projectId) {
+		return taskRepository.findTitleByProjectId(projectId);
+	}
+
+	public List<String> suggestTitleByProjectIdAndQuery(String projectId, String query) {
+		String queryParam = "%" + query;
+		return taskRepository.findTitleByProjectIdAndQuery(projectId, queryParam);
+	}
+
+	public List<TaskResponse> getTaskByQuery(String projectId, TaskSearchRequest taskSearchRequest) {
+	    Integer priority = null;
+	    LocalDate due = null;
+	    LocalDate dueStart = null;
+	    LocalDate dueEnd = null;
+
+	    if (taskSearchRequest.getPriority() != null) {
+	        priority = switch (taskSearchRequest.getPriority()) {
+	            case "critical" -> 1;
+	            case "high" -> 2;
+	            case "medium" -> 3;
+	            case "low" -> 4;
+	            default -> null;
+	        };
+	    }
+
+	    if (taskSearchRequest.getDue() != null) {
+	        switch (taskSearchRequest.getDue()) {
+	            case "today" -> due = LocalDate.now();
+	            case "tomorrow" -> due = LocalDate.now().plusDays(1);
+	            case "next week" -> due = LocalDate.now().plusWeeks(1);
+	            case "next month" -> {
+	                LocalDate now = LocalDate.now();
+	                dueStart = now.plusMonths(1).withDayOfMonth(1);
+	                dueEnd = dueStart.plusMonths(1).minusDays(1);
+	            }
+	        }
+	    }
+
+	    List<String> tags = taskSearchRequest.getTags();
+	    if (tags != null && tags.isEmpty()) {
+	        tags = null;
+	    }
+
+	    List<Task> tasks = taskRepository.findTaskCardsByQuery(
+	        projectId,
+	        taskSearchRequest.getMemberName(),
+	        due,
+	        dueStart,
+	        dueEnd,
+	        taskSearchRequest.getTitle(),
+	        priority,
+	        taskSearchRequest.getStatus(),
+	        tags
+	    );
+
+	    return tasks.stream()
+	        .map(task -> new TaskResponse(
+	            task.getTitle(),
+	            task.getTaskId(),
+	            task.getTaskColumn().getTaskColumnId(),
+	            task.getTaskKey(),
+	            task.getEndDate(),
+	            task.getPriority(),
+	            task.getTags().stream().map(Tag::getTitle).collect(Collectors.toList())
+	        ))
+	        .collect(Collectors.toList());
+	}
 	
-	
+	public Long getCountByTaskColumnIdAndProjectId(String projectId, String taskColumnId) {
+		return taskRepository.countByProjectIdAndTaskColumnId(projectId, taskColumnId);
+	}
+
 }

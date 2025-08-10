@@ -81,12 +81,6 @@ public class ProjectDeletionListener {
         }
 
         // 3. Tags (ManyToMany) — remove from tag and delete if unused
-        for (Tag tag : new ArrayList<>(project.getTags())) {
-            tag.getProjects().remove(project);
-            if (tag.getProjects().isEmpty()) {
-                tagRepository.delete(tag);
-            }
-        }
         project.getTags().clear();
 
         // 4. Just clear task collection (orphanRemoval handles full cleanup)

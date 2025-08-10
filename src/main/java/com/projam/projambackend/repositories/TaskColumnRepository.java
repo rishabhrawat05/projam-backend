@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.projam.projambackend.models.TaskColumn;
 
@@ -18,6 +19,15 @@ public interface TaskColumnRepository extends JpaRepository<TaskColumn, String>{
 	
 	int countByProject_ProjectId(String projectId);
 	
+	@Query("""
+			SELECT tc.taskColumnSlug FROM TaskColumn tc WHERE tc.project.projectId = :projectId
+			""")
+	List<String> findByProjectId(@Param("projectId") String projectId);
+	
+	@Query("""
+			SELECT tc.taskColumnSlug FROM TaskColumn tc WHERE tc.project.projectId = :projectId AND LOWER(tc.taskColumnName) LIKE LOWER(:query)
+			""")
+	List<String> findByProjectIdAndQuery(@Param("projectId") String projectId, @Param("query") String query);
 	
 	
 }

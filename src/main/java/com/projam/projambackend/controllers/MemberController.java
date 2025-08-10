@@ -6,12 +6,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.projam.projambackend.dto.MemberRequest;
 import com.projam.projambackend.dto.MemberResponse;
+import com.projam.projambackend.dto.MemberSummary;
 import com.projam.projambackend.services.MemberService;
 
 @RestController
@@ -42,5 +44,39 @@ public class MemberController {
 	@GetMapping("/get-all/keyword")
 	public List<MemberResponse> getAllMembersByKeyword(@RequestParam String keyword, @RequestParam String projectId){
 		return memberService.getAllMembersByKeyword(keyword, projectId);
+	}
+	
+	@PutMapping("/remove-from-project")
+	public ResponseEntity<String> removeMemberFromProject(
+			@RequestParam("memberId") String memberId,
+			@RequestParam("projectId") String projectId
+			){
+		return ResponseEntity.ok(memberService.removeMemberFromProject(memberId, projectId));
+	}
+	
+	@GetMapping("/suggest")
+	public ResponseEntity<List<String>> suggestMemberName(
+			@RequestParam String projectId,
+			@RequestParam(required = false) String query
+			){
+		if(query == null) {
+			return ResponseEntity.ok(memberService.suggestMemberName(projectId));
+		}
+		else {
+			return ResponseEntity.ok(memberService.suggestMemberName(query, projectId));
+		}
+	}
+	
+	@GetMapping("/get/join-request")
+	public ResponseEntity<List<MemberSummary>> getAllMemberNameByWorkspaceId(
+			@RequestParam("projectId") String projectId,
+			@RequestParam("workspaceId") String workspaceId
+			){
+		return ResponseEntity.ok(memberService.findAllMemberNameByWorkspaceId(workspaceId, projectId));
+	}
+	
+	@GetMapping("/get-all/keyword/workspace")
+	public List<MemberResponse> getAllMembersByKeywordAndWorkspaceId(@RequestParam String keyword, @RequestParam String workspaceId){
+		return memberService.getAllMembersByKeywordAndWorkspaceId(keyword, workspaceId);
 	}
 }

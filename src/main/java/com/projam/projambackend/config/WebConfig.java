@@ -1,5 +1,9 @@
 package com.projam.projambackend.config;
 
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -11,8 +15,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.projam.projambackend.jwt.JwtAuthenticationFilter;
 
@@ -22,41 +28,55 @@ import com.projam.projambackend.jwt.JwtAuthenticationFilter;
 public class WebConfig {
 
 	private final JwtAuthenticationFilter jwtAuthFilter;
-    
-    public WebConfig(JwtAuthenticationFilter jwtAuthFilter) {
-		this.jwtAuthFilter = jwtAuthFilter;
-	}
-    
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
-    	http.csrf(csrf -> csrf.disable())
-    	.cors(Customizer.withDefaults())
-    	.authorizeHttpRequests(auth -> auth.requestMatchers("/projam/auth/**", "/projam/github/**", "/projam/workspace/join/**", "/projam/project/join/**").permitAll().anyRequest().authenticated())
-    	.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-    	.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-    	return http.build();
-    }
-    
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
-    
-    @Bean
-    public WebMvcConfigurer corsConfigurer() {
-        return new WebMvcConfigurer() {
-        
-            @Override
-            public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") 
-                		.allowedOriginPatterns("*")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                        .allowedHeaders("*")
-                        .allowCredentials(true);
-            }
-        };
-    
-    
+	private final RateLimitFilterConfig rateLimitFilter;
+	
+	@Value("${frontend.url}")
+	private String frontendUrl;
 
-    }
+	public WebConfig(JwtAuthenticationFilter jwtAuthFilter, RateLimitFilterConfig rateLimitFilter) {
+		this.jwtAuthFilter = jwtAuthFilter;
+		this.rateLimitFilter = rateLimitFilter;
+	}
+
+	@Bean
+	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+		http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
+				.authorizeHttpRequests(
+						auth -> auth
+								.requestMatchers("/projam/auth/**", "/projam/github/link-installation",
+										"/projam/github/repos", "/projam/github/is-connected", "/projam/github/webhook",
+										"/projam/workspace/join/**", "/projam/project/join/**")
+								.permitAll().anyRequest().authenticated())
+				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+				.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		return http.build();
+	}
+
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+			throws Exception {
+		return authenticationConfiguration.getAuthenticationManager();
+	}
+
+	@Bean
+	public CorsConfigurationSource corsConfigurationSource() {
+	    CorsConfiguration configuration = new CorsConfiguration();
+	    configuration.setAllowedOrigins(List.of(frontendUrl));
+	    configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+	    configuration.setAllowedHeaders(List.of("*"));
+	    configuration.setAllowCredentials(true);
+	    configuration.setMaxAge(3600L);
+
+	    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+	    source.registerCorsConfiguration("/**", configuration);
+	    return source;
+	}
+
+
+
+	@Bean
+	public RestTemplate restTemplate() {
+		return new RestTemplate();
+	}
 }

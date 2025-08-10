@@ -1,5 +1,6 @@
 package com.projam.projambackend.models;
 
+import java.util.List;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -7,6 +8,7 @@ import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -29,8 +31,8 @@ public class TaskColumn {
 	@Column(name = "task_col_slug")
 	private String taskColumnSlug;
 	
-	@OneToMany(mappedBy = "taskColumn", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Task> tasks;
+	@OneToMany(mappedBy = "taskColumn", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Task> tasks;
 	
 	@ManyToOne
 	@JoinColumn(name = "workspace_id")
@@ -67,11 +69,11 @@ public class TaskColumn {
 		this.taskColumnColor = taskColumnColor;
 	}
 
-	public Set<Task> getTasks() {
+	public List<Task> getTasks() {
 		return tasks;
 	}
 
-	public void setTasks(Set<Task> tasks) {
+	public void setTasks(List<Task> tasks) {
 		this.tasks = tasks;
 	}
 

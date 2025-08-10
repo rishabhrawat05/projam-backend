@@ -76,4 +76,12 @@ public class ProjectController {
 		return ResponseEntity.ok(projectService.restoreProject(projectId));
 	}
 	
+	@GetMapping("/search")
+	public ResponseEntity<List<ProjectResponse>> getProjectByProjectNameAndWorkspaceIdAndEmail(
+			@RequestParam String workspaceId,
+			@RequestParam String email,
+			@RequestParam String keyword
+			){
+		return ResponseEntity.ok(projectService.getProjectByProjectNamByWorkspaceIdAndGmail(workspaceId, email, keyword));
+	}
 }

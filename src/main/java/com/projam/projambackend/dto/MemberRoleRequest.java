@@ -1,5 +1,6 @@
 package com.projam.projambackend.dto;
 
+import java.util.List;
 import java.util.Set;
 
 public class MemberRoleRequest {
@@ -8,7 +9,7 @@ public class MemberRoleRequest {
 	
 	private String memberRoleId;
 	
-	private Set<MemberResponse> members;
+	private List<MemberResponse> members;
 	
 	private String roleColor;
 	
@@ -50,11 +51,11 @@ public class MemberRoleRequest {
 		this.memberRoleId = memberRoleId;
 	}
 
-	public Set<MemberResponse> getMembers() {
+	public List<MemberResponse> getMembers() {
 		return members;
 	}
 
-	public void setMembers(Set<MemberResponse> members) {
+	public void setMembers(List<MemberResponse> members) {
 		this.members = members;
 	}
 

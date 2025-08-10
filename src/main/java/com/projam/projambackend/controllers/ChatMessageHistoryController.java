@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projam.projambackend.dto.ChatMessageResponse;
 import com.projam.projambackend.models.ChatMessage;
 import com.projam.projambackend.repositories.ChatMessageRepository;
 
@@ -23,7 +24,7 @@ public class ChatMessageHistoryController {
 	}
 
     @GetMapping("/history")
-    public List<ChatMessage> getChatHistory(@RequestParam String projectId, @RequestParam String email, Principal principal) {
+    public List<ChatMessageResponse> getChatHistory(@RequestParam String projectId, @RequestParam String email, Principal principal) {
         return chatRepo.findChatHistory(projectId, principal.getName(), email);
     }
 }

@@ -2,7 +2,9 @@ package com.projam.projambackend.models;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -73,19 +75,22 @@ public class Task {
 	@Column(name = "created_at")
 	private LocalDateTime createdAt;
 	
+	@Column(name = "is_deleted")
+	private Boolean isDeleted;
+	
 	@ManyToMany
 	@JoinTable(
 	    name = "task_tags",
 	    joinColumns = @JoinColumn(name = "task_id"),
 	    inverseJoinColumns = @JoinColumn(name = "tag_id")
 	)
-	private Set<Tag> tags = new HashSet<>();
+	private List<Tag> tags = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Activity> activities;
+	private List<Activity> activities;
 	
 	@OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Comment> comments = new HashSet<Comment>();
+	private List<Comment> comments = new ArrayList<Comment>();
 	
 	@ManyToOne
 	@JoinColumn(name = "member_role_id")
@@ -177,14 +182,6 @@ public class Task {
 		this.status = status;
 	}
 
-	public Set<Tag> getTags() {
-		return tags;
-	}
-
-	public void setTags(Set<Tag> tags) {
-		this.tags = tags;
-	}
-
 	public Project getProject() {
 		return project;
 	}
@@ -195,22 +192,6 @@ public class Task {
 	
 	public void addTag(Tag tag) {
 		this.tags.add(tag);
-	}
-
-	public Set<Activity> getActivities() {
-		return activities;
-	}
-
-	public void setActivities(Set<Activity> activities) {
-		this.activities = activities;
-	}
-
-	public Set<Comment> getComments() {
-		return comments;
-	}
-
-	public void setComments(Set<Comment> comments) {
-		this.comments = comments;
 	}
 
 	public MemberRole getMemberRole() {
@@ -331,8 +312,37 @@ public class Task {
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
 	}
-	
-	
-	
+
+	public List<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<Tag> tags) {
+		this.tags = tags;
+	}
+
+	public List<Activity> getActivities() {
+		return activities;
+	}
+
+	public void setActivities(List<Activity> activities) {
+		this.activities = activities;
+	}
+
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
+
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	
 }

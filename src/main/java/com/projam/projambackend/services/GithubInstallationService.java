@@ -14,11 +14,15 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import com.projam.projambackend.dto.GithubInstallationResponse;
+import com.projam.projambackend.exceptions.GithubInstallationNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
+import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
 import com.projam.projambackend.models.GithubAutomation;
 import com.projam.projambackend.models.GithubInstallation;
 import com.projam.projambackend.models.Project;
@@ -81,7 +85,7 @@ public class GithubInstallationService {
 	}
 
 	@Transactional
-	public void saveInstallation(String installationIdStr, String workspaceId) throws Exception {
+	public void saveInstallation(String installationIdStr, String workspaceId, String projectId, String userEmail) throws Exception {
 		Long installationId = Long.parseLong(installationIdStr);
 
 		Workspace workspace = workspaceRepository.findById(workspaceId)
@@ -90,28 +94,32 @@ public class GithubInstallationService {
 		GithubInstallation existingInstallation = githubInstallationRepository.findByInstallationId(installationId)
 				.orElse(null);
 
+		if(!workspace.getAdminGmail().equals(userEmail)) {
+			throw new GithubInstallationNotFoundException("Github Save Installation is not authorized");
+		}
+		
 		if (existingInstallation != null) {
-			if (existingInstallation.getWorkspace().getWorkspaceId().equals(workspaceId)) {
+		    GithubInstallation newLink = new GithubInstallation();
+		    newLink.setInstallationId(existingInstallation.getInstallationId());
+		    newLink.setAccessToken(existingInstallation.getAccessToken());
+		    newLink.setGithubUsername(existingInstallation.getGithubUsername());
+		    newLink.setConnectedAt(Instant.now());
+		    newLink.setAdminGmail(workspace.getAdminGmail());
 
-				return;
-			} else {
-				throw new RuntimeException("This GitHub Installation is already linked to another workspace.");
-			}
+		    githubInstallationRepository.save(newLink);
+		    return;
 		}
-
-		if (githubInstallationRepository.existsByWorkspace(workspace)) {
-			throw new RuntimeException("This workspace already has a GitHub installation linked.");
-		}
-
 		String jwt = generateGitHubAppJWT();
-
+		System.out.println(jwt);
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(jwt);
-		headers.setAccept(Collections.singletonList(MediaType.valueOf("application/vnd.github+json")));
+		headers.set("Accept", "application/vnd.github+json");
+		headers.set("User-Agent", "ProJamm");
+		headers.set("X-GitHub-Api-Version", "2022-11-28");
 		HttpEntity<Void> entity = new HttpEntity<>(headers);
-
+		System.out.println(headers);
 		ResponseEntity<Map> response = restTemplate.exchange(
 				"https://api.github.com/app/installations/" + installationId + "/access_tokens", HttpMethod.POST,
 				entity, Map.class);
@@ -142,19 +150,18 @@ public class GithubInstallationService {
 		installation.setAccessToken(accessToken);
 		installation.setGithubUsername(githubUsername);
 		installation.setConnectedAt(Instant.now());
-		installation.setWorkspace(workspace);
-
+		installation.setAdminGmail(workspace.getAdminGmail());
 		githubInstallationRepository.save(installation);
 	}
 
 	public String refreshAccessToken(GithubInstallation installation) throws Exception {
 		String jwt = generateGitHubAppJWT();
-
 		RestTemplate restTemplate = new RestTemplate();
 
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(jwt);
-		headers.setAccept(Collections.singletonList(MediaType.valueOf("application/vnd.github+json")));
+		headers.set("Accept", "application/vnd.github+json");
+
 		HttpEntity<Void> entity = new HttpEntity<>(headers);
 
 		ResponseEntity<Map> response = restTemplate.exchange(
@@ -169,35 +176,49 @@ public class GithubInstallationService {
 	}
 
 	public List<Map<String, Object>> getAuthorizedRepos(String workspaceId) throws Exception {
-		GithubInstallation installation = githubInstallationRepository.findByWorkspace_WorkspaceId(workspaceId)
-				.orElseThrow(() -> new RuntimeException("GitHub Installation not found"));
+		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+	    GithubInstallation installation = githubInstallationRepository.findByAdminGmail(workspace.getAdminGmail())
+	            .orElseThrow(() -> new RuntimeException("GitHub Installation not found"));
 
-		String accessToken = refreshAccessToken(installation);
+	    RestTemplate restTemplate = new RestTemplate();
 
-		HttpHeaders headers = new HttpHeaders();
-		headers.setBearerAuth(accessToken);
-		headers.setAccept(Collections.singletonList(MediaType.valueOf("application/vnd.github+json")));
-
-		HttpEntity<Void> entity = new HttpEntity<>(headers);
-		RestTemplate restTemplate = new RestTemplate();
-
-		ResponseEntity<Map> response = restTemplate.exchange("https://api.github.com/installation/repositories",
-				HttpMethod.GET, entity, Map.class);
-
-		return (List<Map<String, Object>>) response.getBody().get("repositories");
+	    try {
+	        return fetchReposWithToken(installation, installation.getAccessToken(), restTemplate);
+	    } catch (HttpClientErrorException.Unauthorized ex) {
+	        String newAccessToken = refreshAccessToken(installation);
+	        return fetchReposWithToken(installation, newAccessToken, restTemplate);
+	    }
 	}
+
+	private List<Map<String, Object>> fetchReposWithToken(GithubInstallation installation, String token, RestTemplate restTemplate) {
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setBearerAuth(token);
+	    headers.set("Accept", "application/vnd.github+json");
+
+	    HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+	    ResponseEntity<Map> response = restTemplate.exchange(
+	            "https://api.github.com/installation/repositories",
+	            HttpMethod.GET, entity, Map.class);
+
+	    return (List<Map<String, Object>>) response.getBody().get("repositories");
+	}
+
 
 	@Transactional
 	public void connectRepoToProject(String projectId, String repoName, String repoOwner) {
 		Project project = projectRepository.findById(projectId)
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 
-		if (project.getGithubInstallation() != null) {
-			throw new RuntimeException("Project already connected to a repo");
-		}
+		if (project.getGithubInstallation() != null &&
+			    project.getLinkedRepoName() != null &&
+			    project.getLinkedRepoOwner() != null) {
+			    throw new RuntimeException("Project already connected to a repo");
+			}
+
 
 		GithubInstallation installation = githubInstallationRepository
-				.findByWorkspace_WorkspaceId(project.getWorkspace().getWorkspaceId())
+				.findByAdminGmail(project.getWorkspace().getAdminGmail())
 				.orElseThrow(() -> new RuntimeException("GitHub Installation not found for this workspace"));
 
 		project.setGithubInstallation(installation);
@@ -266,4 +287,30 @@ public class GithubInstallationService {
 
 		return response;
 	}
+	
+	@Transactional
+	public void disconnectRepoFromProject(String projectId, String userEmail) {
+	    Project project = projectRepository.findById(projectId)
+	        .orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
+
+	    if (!project.getMembers().stream().anyMatch(m -> m.getMemberGmail().equals(userEmail))) {
+	        throw new AccessDeniedException("You are not authorized to disconnect this repo");
+	    }
+
+	    if (project.getGithubInstallation() == null) {
+	        throw new IllegalStateException("No GitHub repository is currently connected to this project.");
+	    }
+
+	    project.setLinkedRepoName(null);
+	    project.setLinkedRepoOwner(null);
+
+	    project.getEdges().removeIf(edge -> edge instanceof GithubAutomation);
+
+	    project.getTasks().forEach(task -> {
+	    	task.setIsIntegrated(false);
+	    });
+
+	    projectRepository.save(project);
+	}
+
 }

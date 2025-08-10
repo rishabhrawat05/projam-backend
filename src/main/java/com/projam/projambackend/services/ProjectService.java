@@ -95,7 +95,7 @@ public class ProjectService {
 		project.setIsPrivate(projectRequest.getIsPrivate());
 		project.setStartDate(projectRequest.getStartDate());
 		project.setEndDate(projectRequest.getEndDate());
-		project.setStatus(projectRequest.getProjectStatus());
+		project.setStatus(ProjectStatus.NOT_STARTED);
 		project.setProjectDescription(projectRequest.getProjectDescription());
 		project.setWorkspace(workspace);
 		projectRepository.save(project);
@@ -116,7 +116,7 @@ public class ProjectService {
 			project.getMemberRoles().add(adminRole);
 		} else {
 
-			Set<Member> members = memberRepository.findAllByWorkspaceId(workspaceId);
+			List<Member> members = memberRepository.findAllByWorkspaceId(workspaceId);
 			project.setMembers(members);
 
 			for (Member member : members) {
@@ -210,6 +210,9 @@ public class ProjectService {
 		Project project = projectRepository.findById(joinProjectRequestDto.getProjectId())
 				.orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		String joinProjectLink = createInviteJoinLink(workspace, project, joinProjectRequestDto.getEmail());
+		Member member  = memberRepository.findByMemberGmailAndWorkspaceId(joinProjectRequestDto.getEmail(), joinProjectRequestDto.getWorkspaceId()).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		member.setRequestStatus("REQUESTED");
+		memberRepository.save(member);
 		emailUtility.sendEmail(joinProjectRequestDto.getEmail(), "You have been invited to Join a Project",
 				"Join the project in 2 days with the link " + joinProjectLink);
 		return "Email has been sent to Join Project";
@@ -315,6 +318,10 @@ public class ProjectService {
 		project.setDeletionMarkedAt(null);
 		projectRepository.save(project);
 		return "Project Restoration Task is Queued";
+	}
+	
+	public List<ProjectResponse> getProjectByProjectNamByWorkspaceIdAndGmail(String workspaceId, String gmail, String keyword){
+		return projectRepository.findProjectNameByWorkspaceIdAndEmailAndKeyword(workspaceId, gmail, keyword);
 	}
 
 }

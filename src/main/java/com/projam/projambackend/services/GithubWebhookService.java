@@ -10,11 +10,15 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.projam.projambackend.dto.GithubAutomationResponse;
+import com.projam.projambackend.exceptions.GithubInstallationNotFoundException;
 import com.projam.projambackend.exceptions.TaskColumnNotFoundException;
+import com.projam.projambackend.models.GithubInstallation;
 import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Task;
 import com.projam.projambackend.models.TaskColumn;
 import com.projam.projambackend.repositories.GithubAutomationRepository;
+import com.projam.projambackend.repositories.GithubInstallationRepository;
+import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.TaskColumnRepository;
 import com.projam.projambackend.repositories.TaskRepository;
 
@@ -27,13 +31,17 @@ public class GithubWebhookService {
 	private final ObjectMapper mapper;
 	private final GithubAutomationRepository githubAutomationRepository;
 	private final TaskColumnRepository taskColumnRepository;
+	private final GithubInstallationRepository githubInstallationRepository;
+	private final ProjectRepository projectRepository;
 
 	public GithubWebhookService(TaskRepository taskRepository, GithubAutomationRepository githubAutomationRepository,
-			TaskColumnRepository taskColumnRepository) {
+			TaskColumnRepository taskColumnRepository, GithubInstallationRepository githubInstallationRepository, ProjectRepository projectRepository) {
 		this.taskRepository = taskRepository;
 		this.mapper = new ObjectMapper();
 		this.githubAutomationRepository = githubAutomationRepository;
 		this.taskColumnRepository = taskColumnRepository;
+		this.githubInstallationRepository = githubInstallationRepository;
+		this.projectRepository = projectRepository;
 	}
 
 	@Transactional
@@ -70,6 +78,34 @@ public class GithubWebhookService {
 				e.printStackTrace();
 			}
 		}
+
+		if ("installation".equals(eventType)) {
+			try {
+				JsonNode root = mapper.readTree(payload);
+				String action = root.get("action").asText();
+
+				if ("deleted".equals(action)) {
+					Long installationId = root.get("installation").get("id").asLong();
+					String accountLogin = root.get("installation").get("account").get("login").asText();
+
+					handleUninstallationEvent(installationId, accountLogin);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	public void handleUninstallationEvent(Long installationId, String githubUsername) {
+		GithubInstallation githubInstallation = githubInstallationRepository.findByInstallationId(installationId)
+				.orElseThrow(() -> new GithubInstallationNotFoundException("Github Installation Not Found"));
+		List<Project> projects = githubInstallation.getProjects();
+		for(Project project : projects) {
+			project.setGithubInstallation(null);
+		}
+		projectRepository.saveAll(projects);
+		githubInstallationRepository.delete(githubInstallation);
+
 	}
 
 	public void handleGithubIssueEvent(String action, String issueUrl, String repoName, String title) {
@@ -171,14 +207,11 @@ public class GithubWebhookService {
 			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("pr-approved")).findFirst()
 					.ifPresent(github -> task.setStatus(github.getTargetColumn().replaceAll("-\\d+", "")));
 		} else if (action.equals("review_requested")) {
-		    githubAutomation.stream()
-		        .filter(github -> github.getSourceEvent().equals("review-requested"))
-		        .findFirst()
-		        .ifPresent(github -> {
-		            task.setStatus(github.getTargetColumn().replaceAll("-\\d+", ""));
-		        });
+			githubAutomation.stream().filter(github -> github.getSourceEvent().equals("review-requested")).findFirst()
+					.ifPresent(github -> {
+						task.setStatus(github.getTargetColumn().replaceAll("-\\d+", ""));
+					});
 		}
-
 
 		TaskColumn newColumn = taskColumnRepository
 				.findByTaskColumnSlugAndProject_ProjectId(task.getStatus(), project.getProjectId())

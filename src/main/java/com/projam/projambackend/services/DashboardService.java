@@ -76,7 +76,7 @@ public class DashboardService {
 			response.setTotalTask(taskRepository.countByProjectAndAssignedTo_memberGmail(project, email));
 		}
 
-		response.setUserRoles(member.getMemberRole().stream().map(MemberRole::getRoleName).collect(Collectors.toSet()));
+		response.setUserRoles(member.getMemberRole().stream().map(MemberRole::getRoleName).collect(Collectors.toList()));
 
 		return response;
 	}
@@ -86,7 +86,7 @@ public class DashboardService {
 		Project project = projectRepository.findById(projectId)
 			    .orElseThrow(() -> new ProjectNotFoundException("Project not found"));
 		response.setActivity(activityRepository.findAllByProject_ProjectId(projectId).stream().map(i -> i)
-				.collect(Collectors.toSet()));
+				.collect(Collectors.toList()));
 		return response;
 
 	}

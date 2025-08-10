@@ -1,6 +1,7 @@
 package com.projam.projambackend.dto;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 public class TaskRequest {
@@ -19,7 +20,7 @@ public class TaskRequest {
 	
 	private String status;
 	
-	private Set<TagResponse> tags;
+	private List<TagResponse> tags;
 
 	private String taskColumnSlug;
 	
@@ -81,11 +82,13 @@ public class TaskRequest {
 		this.status = status;
 	}
 
-	public Set<TagResponse> getTags() {
+	
+	
+	public List<TagResponse> getTags() {
 		return tags;
 	}
 
-	public void setTags(Set<TagResponse> tags) {
+	public void setTags(List<TagResponse> tags) {
 		this.tags = tags;
 	}
 

@@ -33,4 +33,15 @@ public class TaskColumnController {
 	public List<TaskColumnResponse> getAllTaskColumnByProjectId(@RequestParam String projectId){
 		return taskColumnService.getAllTaskColumnByProjectId(projectId);
 	}
+	
+	@GetMapping("/suggest/status")
+	public ResponseEntity<List<String>> suggestTaskColumnStatus(@RequestParam String projectId, @RequestParam String query){
+		if(query == null) {
+			return ResponseEntity.ok(taskColumnService.suggestTaskColumn(projectId));
+		}
+		else {
+			return ResponseEntity.ok(taskColumnService.suggestTaskColumnAndQuery(projectId, query));
+		}
+	}
+	
 }

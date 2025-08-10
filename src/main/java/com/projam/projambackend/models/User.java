@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 
 import jakarta.persistence.Column;
-
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 
 import jakarta.persistence.FetchType;
@@ -74,6 +74,10 @@ public class User implements UserDetails{
 	@OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private Set<JoinWorkspaceRequest> joinRequests = new HashSet<>();
+	
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(name = "auth_providers")
+	private Set<String> authProviders = new HashSet<>();
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -202,4 +206,14 @@ public class User implements UserDetails{
 	public String getUserName() {
 		return this.username;
 	}
+
+	public Set<String> getAuthProviders() {
+		return authProviders;
+	}
+
+	public void setAuthProviders(Set<String> authProviders) {
+		this.authProviders = authProviders;
+	}
+	
+	
 }

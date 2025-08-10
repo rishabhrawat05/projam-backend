@@ -38,7 +38,7 @@ public class Project {
 	private String projectName;
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Task> tasks = new HashSet<Task>();
+	private List<Task> tasks = new ArrayList<Task>();
 	
 	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinTable(
@@ -46,7 +46,7 @@ public class Project {
 		    joinColumns = @JoinColumn(name = "project_id"),
 		    inverseJoinColumns = @JoinColumn(name = "member_id")
 		)
-	private Set<Member> members = new HashSet<>(); ;
+	private List<Member> members = new ArrayList<>(); ;
 	
 	@Column(name = "start_date")
 	private LocalDate startDate;
@@ -58,7 +58,7 @@ public class Project {
 	private Boolean isPrivate;
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<Activity> activities = new HashSet<Activity>();
+	private List<Activity> activities = new ArrayList<Activity>();
 
 	@ManyToOne
 	@JoinColumn(name = "workspace_id")
@@ -76,13 +76,8 @@ public class Project {
 	@Column(name = "deletion_marked_at")
 	private Date deletionMarkedAt;
 	
-	@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(
-        name = "project_tags",
-        joinColumns = @JoinColumn(name = "project_id"),
-        inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private Set<Tag> tags = new HashSet<Tag>();
+	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Tag> tags = new ArrayList<Tag>();
 	
 	@ManyToOne(fetch = FetchType.EAGER)
 	@JoinColumn(name = "github_installation_id")
@@ -95,25 +90,25 @@ public class Project {
 	private String linkedRepoOwner;
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-	private Set<MemberRole> memberRoles = new HashSet<MemberRole>();
+	private List<MemberRole> memberRoles = new ArrayList<MemberRole>();
 
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<GithubAutomation> edges = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<TaskColumn> taskColumns = new HashSet<TaskColumn>();
+	private List<TaskColumn> taskColumns = new ArrayList<TaskColumn>();
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<JoinProjectRequest> joinRequests = new HashSet<>();
+	private List<JoinProjectRequest> joinRequests = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<JoinProjectToken> joinToken = new HashSet<>();
+	private List<JoinProjectToken> joinToken = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<WeeklyProgress> weeklyProgress = new HashSet<>();
+	private List<WeeklyProgress> weeklyProgress = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<ChatMessage> chatMessage = new HashSet<>();
+	private List<ChatMessage> chatMessage = new ArrayList<>();
 	
 	public String getProjectId() {
 		return projectId;
@@ -131,13 +126,6 @@ public class Project {
 		this.projectName = projectName;
 	}
 
-	public Set<Task> getTasks() {
-		return tasks;
-	}
-
-	public void setTasks(Set<Task> tasks) {
-		this.tasks = tasks;
-	}
 
 	public LocalDate getStartDate() {
 		return startDate;
@@ -163,21 +151,6 @@ public class Project {
 		this.isPrivate = isPrivate;
 	}
 
-	public Set<Activity> getActivities() {
-		return activities;
-	}
-
-	public void setActivities(Set<Activity> activities) {
-		this.activities = activities;
-	}
-
-	public Set<Member> getMembers() {
-		return members;
-	}
-
-	public void setMembers(Set<Member> members) {
-		this.members = members;
-	}
 
 	public Workspace getWorkspace() {
 		return workspace;
@@ -219,13 +192,7 @@ public class Project {
 		this.members.remove(member);
 	}
 	
-	public Set<Tag> getTags() {
-		return tags;
-	}
 	
-	public void setTags(Set<Tag> tags) {
-		this.tags = tags;
-	}
 
 	public GithubInstallation getGithubInstallation() {
 		return githubInstallation;
@@ -251,17 +218,6 @@ public class Project {
 		this.linkedRepoOwner = linkedRepoOwner;
 	}
 	
-	
-	
-	public Set<MemberRole> getMemberRoles() {
-		return memberRoles;
-	}
-
-	public void setMemberRoles(Set<MemberRole> memberRoles) {
-		this.memberRoles = memberRoles;
-	}
-	
-	
 
 	public List<GithubAutomation> getEdges() {
 		return edges;
@@ -271,54 +227,92 @@ public class Project {
 		this.edges = edges;
 	}
 	
-	
-
-	public Set<JoinProjectRequest> getJoinRequests() {
-		return joinRequests;
-	}
-
-	public void setJoinRequests(Set<JoinProjectRequest> joinRequests) {
-		this.joinRequests = joinRequests;
-	}
-
-	public Set<JoinProjectToken> getJoinToken() {
-		return joinToken;
-	}
-
-	public void setJoinToken(Set<JoinProjectToken> joinToken) {
-		this.joinToken = joinToken;
-	}
-
-	public Set<WeeklyProgress> getWeeklyProgress() {
-		return weeklyProgress;
-	}
-
-	public void setWeeklyProgress(Set<WeeklyProgress> weeklyProgress) {
-		this.weeklyProgress = weeklyProgress;
-	}
-
-	public Set<ChatMessage> getChatMessage() {
-		return chatMessage;
-	}
-
-	public void setChatMessage(Set<ChatMessage> chatMessage) {
-		this.chatMessage = chatMessage;
-	}
-
-	public Set<TaskColumn> getTaskColumns() {
-		return taskColumns;
-	}
-
-	public void setTaskColumns(Set<TaskColumn> taskColumns) {
-		this.taskColumns = taskColumns;
-	}
-
 	public Date getDeletionMarkedAt() {
 		return deletionMarkedAt;
 	}
 
 	public void setDeletionMarkedAt(Date deletionMarkedAt) {
 		this.deletionMarkedAt = deletionMarkedAt;
+	}
+
+	public List<Task> getTasks() {
+		return tasks;
+	}
+
+	public void setTasks(List<Task> tasks) {
+		this.tasks = tasks;
+	}
+
+	public List<Member> getMembers() {
+		return members;
+	}
+
+	public void setMembers(List<Member> members) {
+		this.members = members;
+	}
+
+	public List<Activity> getActivities() {
+		return activities;
+	}
+
+	public void setActivities(List<Activity> activities) {
+		this.activities = activities;
+	}
+
+	public List<Tag> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<Tag> tags) {
+		this.tags = tags;
+	}
+
+	public List<MemberRole> getMemberRoles() {
+		return memberRoles;
+	}
+
+	public void setMemberRoles(List<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
+
+	public List<TaskColumn> getTaskColumns() {
+		return taskColumns;
+	}
+
+	public void setTaskColumns(List<TaskColumn> taskColumns) {
+		this.taskColumns = taskColumns;
+	}
+
+	public List<JoinProjectRequest> getJoinRequests() {
+		return joinRequests;
+	}
+
+	public void setJoinRequests(List<JoinProjectRequest> joinRequests) {
+		this.joinRequests = joinRequests;
+	}
+
+	public List<JoinProjectToken> getJoinToken() {
+		return joinToken;
+	}
+
+	public void setJoinToken(List<JoinProjectToken> joinToken) {
+		this.joinToken = joinToken;
+	}
+
+	public List<WeeklyProgress> getWeeklyProgress() {
+		return weeklyProgress;
+	}
+
+	public void setWeeklyProgress(List<WeeklyProgress> weeklyProgress) {
+		this.weeklyProgress = weeklyProgress;
+	}
+
+	public List<ChatMessage> getChatMessage() {
+		return chatMessage;
+	}
+
+	public void setChatMessage(List<ChatMessage> chatMessage) {
+		this.chatMessage = chatMessage;
 	}
 
 	public Project() {

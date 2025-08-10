@@ -1,6 +1,8 @@
 package com.projam.projambackend.models;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -51,16 +53,19 @@ public class Workspace {
 	
 	@ManyToMany(mappedBy = "workspaces")
 	@JsonIgnore
-	private Set<User> users = new HashSet<>();
+	private List<User> users = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<JoinWorkspaceRequest> requests = new HashSet<>();
+	private List<JoinWorkspaceRequest> requests = new ArrayList<>();
 
 	@OneToMany(mappedBy = "workspace")
-	private Set<Project> projects = new HashSet<>();
+	private List<Project> projects = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "workspace")
-	private Set<Member> members = new HashSet<>();
+	private List<Member> members = new ArrayList<>();
+	
+	@Column(name = "member_count")
+	private Integer memberCount;
 	
 	public String getWorkspaceId() {
 		return workspaceId;
@@ -94,13 +99,6 @@ public class Workspace {
 		this.organizationName = organizationName;
 	}
 
-	public Set<User> getUsers() {
-		return users;
-	}
-
-	public void setUsers(Set<User> users) {
-		this.users = users;
-	}
 
 	public String getWorkspaceSlug() {
 		return workspaceSlug;
@@ -144,14 +142,7 @@ public class Workspace {
 		this.workspaceRole = workspaceRole;
 	}
 
-	public Set<JoinWorkspaceRequest> getRequests() {
-		return requests;
-	}
 
-	public void setRequests(Set<JoinWorkspaceRequest> requests) {
-		this.requests = requests;
-	}
-	
 	public void addRequest(JoinWorkspaceRequest request) {
 	    requests.add(request);
 	    request.setWorkspace(this);
@@ -182,13 +173,6 @@ public class Workspace {
 		return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6).toUpperCase();
 	}
 
-	public Set<Project> getProjects() {
-		return projects;
-	}
-
-	public void setProjects(Set<Project> projects) {
-		this.projects = projects;
-	}
 	
 	public void addMember(Member member) {
 		members.add(member);
@@ -200,8 +184,52 @@ public class Workspace {
 		member.setWorkspace(null);
 	}
 	
+	
+	
+	public List<User> getUsers() {
+		return users;
+	}
+
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}
+
+	public List<JoinWorkspaceRequest> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(List<JoinWorkspaceRequest> requests) {
+		this.requests = requests;
+	}
+
+	public List<Project> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
+	}
+
+	public List<Member> getMembers() {
+		return members;
+	}
+
+	public void setMembers(List<Member> members) {
+		this.members = members;
+	}
+
 	public Workspace() {
 		this.workspaceId = NanoIdUtils.randomNanoId();
 	}
+
+	public Integer getMemberCount() {
+		return memberCount;
+	}
+
+	public void setMemberCount(Integer memberCount) {
+		this.memberCount = memberCount;
+	}
+	
+	
 	
 }

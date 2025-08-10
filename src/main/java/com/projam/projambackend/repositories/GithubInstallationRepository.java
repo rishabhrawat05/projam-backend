@@ -15,13 +15,14 @@ public interface GithubInstallationRepository extends JpaRepository<GithubInstal
 
 	boolean existsByInstallationId(Long installationId);
 	
-	Optional<GithubInstallation> findByWorkspace_WorkspaceId(String workspaceId);
-	
-	boolean existsByWorkspace(Workspace workspace);
-	
 	Optional<GithubInstallation> findTopBy();
 	
 	Optional<GithubInstallation> findByInstallationId(Long installationId);
+	
+	Optional<GithubInstallation> findByGithubUsername(String username);
+	
+	Optional<GithubInstallation> findByAdminGmail(String adminGmail);
+	
 	
 
 }

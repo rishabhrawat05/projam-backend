@@ -1,5 +1,6 @@
 package com.projam.projambackend.models;
 
+import java.util.List;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -26,7 +27,7 @@ public class Role {
 	}
 	
 	@ManyToMany(mappedBy = "roles")
-	private Set<User> users;
+	private List<User> users;
 
 	public void setRoleId(String roleId) {
 		this.roleId = roleId;

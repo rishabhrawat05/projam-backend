@@ -2,10 +2,13 @@ package com.projam.projambackend.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TaskResponse {
-	
+
 	private String taskId;
 
 	private String title;
@@ -21,28 +24,30 @@ public class TaskResponse {
 	private MemberResponse assignedTo;
 
 	private String status;
-	
+
 	private Integer taskNumber;
-	
+
 	private String taskKey;
-	
+
 	private String githubIssueLink;
-	
+
 	private String githubRepoName;
 
 	private String githubIssueStatus;
 
 	private String githubPrStatus;
-	
+
 	private Boolean isIntegrated;
-	
+
 	private String githubPullRequestLink;
-	
-	private Set<TagRequest> tags;
-	
+
+	private List<TagRequest> tags;
+
 	private Integer priority;
-	
+
 	private LocalDateTime createdAt;
+
+	private String taskColumnId;
 
 	public String getTitle() {
 		return title;
@@ -92,10 +97,6 @@ public class TaskResponse {
 		this.assignedTo = assignedTo;
 	}
 
-	public void setTags(Set<TagRequest> tags) {
-		this.tags = tags;
-	}
-
 	public String getStatus() {
 		return status;
 	}
@@ -111,12 +112,6 @@ public class TaskResponse {
 	public void setTaskId(String taskId) {
 		this.taskId = taskId;
 	}
-	
-	public Set<TagRequest> getTags() {
-		return tags;
-	}
-	
-	
 
 	public Integer getTaskNumber() {
 		return taskNumber;
@@ -125,7 +120,7 @@ public class TaskResponse {
 	public void setTaskNumber(Integer taskNumber) {
 		this.taskNumber = taskNumber;
 	}
-	
+
 	public String getTaskKey() {
 		return taskKey;
 	}
@@ -133,8 +128,6 @@ public class TaskResponse {
 	public void setTaskKey(String taskKey) {
 		this.taskKey = taskKey;
 	}
-	
-	
 
 	public String getGithubIssueLink() {
 		return githubIssueLink;
@@ -151,8 +144,6 @@ public class TaskResponse {
 	public void setGithubRepoName(String githubRepoName) {
 		this.githubRepoName = githubRepoName;
 	}
-
-	
 
 	public String getGithubIssueStatus() {
 		return githubIssueStatus;
@@ -177,7 +168,6 @@ public class TaskResponse {
 	public void setIsIntegrated(Boolean isIntegrated) {
 		this.isIntegrated = isIntegrated;
 	}
-	
 
 	public String getGithubPullRequestLink() {
 		return githubPullRequestLink;
@@ -187,9 +177,14 @@ public class TaskResponse {
 		this.githubPullRequestLink = githubPullRequestLink;
 	}
 
-	
-	
-	
+	public List<TagRequest> getTags() {
+		return tags;
+	}
+
+	public void setTags(List<TagRequest> tags) {
+		this.tags = tags;
+	}
+
 	public Integer getPriority() {
 		return priority;
 	}
@@ -197,8 +192,6 @@ public class TaskResponse {
 	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
-	
-	
 
 	public LocalDateTime getCreatedAt() {
 		return createdAt;
@@ -206,6 +199,14 @@ public class TaskResponse {
 
 	public void setCreatedAt(LocalDateTime createdAt) {
 		this.createdAt = createdAt;
+	}
+
+	public String getTaskColumnId() {
+		return taskColumnId;
+	}
+
+	public void setTaskColumnId(String taskColumnId) {
+		this.taskColumnId = taskColumnId;
 	}
 
 	/**
@@ -226,11 +227,15 @@ public class TaskResponse {
 	 * @param isIntegrated
 	 * @param githubPullRequestLink
 	 * @param tags
+	 * @param priority
+	 * @param createdAt
+	 * @param taskColumnId
 	 */
 	public TaskResponse(String taskId, String title, String description, LocalDate startDate, LocalDate endDate,
 			MemberResponse assignee, MemberResponse assignedTo, String status, Integer taskNumber, String taskKey,
 			String githubIssueLink, String githubRepoName, String githubIssueStatus, String githubPrStatus,
-			Boolean isIntegrated, String githubPullRequestLink, Set<TagRequest> tags, Integer priority, LocalDateTime createdAt) {
+			Boolean isIntegrated, String githubPullRequestLink, List<TagRequest> tags, Integer priority,
+			LocalDateTime createdAt, String taskColumnId) {
 		this.taskId = taskId;
 		this.title = title;
 		this.description = description;
@@ -250,14 +255,22 @@ public class TaskResponse {
 		this.tags = tags;
 		this.priority = priority;
 		this.createdAt = createdAt;
+		this.taskColumnId = taskColumnId;
 	}
 
 	public TaskResponse() {
-		
+
 	}
 
-	
-	
-	
-	
+	public TaskResponse(String title, String taskId, String taskColumnId, String taskKey, LocalDate endDate, Integer priority,
+			List<String> tagTitles) {
+		this.title = title;
+		this.taskId = taskId;
+		this.taskColumnId = taskColumnId;
+		this.taskKey = taskKey;
+		this.endDate = endDate;
+		this.priority = priority;
+		this.tags = tagTitles.stream().map(TagRequest::new).collect(Collectors.toList());
+	}
+
 }

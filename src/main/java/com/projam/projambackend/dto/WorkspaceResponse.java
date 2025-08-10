@@ -1,10 +1,8 @@
 package com.projam.projambackend.dto;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.projam.projambackend.models.JoinWorkspaceRequest;
-import com.projam.projambackend.models.User;
 
 public class WorkspaceResponse {
 	
@@ -18,7 +16,7 @@ public class WorkspaceResponse {
 
 	private String organizationName;
 
-	private Set<UserResponse> users = new HashSet<>();
+	private List<UserResponse> users = new ArrayList<>();
 
 	private String adminGmail;
 
@@ -30,7 +28,7 @@ public class WorkspaceResponse {
 	
 	private String joinCode;
 	
-	private Set<JoinWorkspaceRequestResponse> requests = new HashSet<>();
+	private List<JoinWorkspaceRequestResponse> requests = new ArrayList<>();
 	
 	public String getWorkspaceName() {
 		return workspaceName;
@@ -56,13 +54,6 @@ public class WorkspaceResponse {
 		this.organizationName = organizationName;
 	}
 
-	public Set<UserResponse> getUsers() {
-		return users;
-	}
-
-	public void setUsers(Set<UserResponse> users) {
-		this.users = users;
-	}
 
 	public String getWorkspaceSlug() {
 		return workspaceSlug;
@@ -112,20 +103,28 @@ public class WorkspaceResponse {
 		this.joinCode = joinCode;
 	}
 
-	public Set<JoinWorkspaceRequestResponse> getRequests() {
-		return requests;
-	}
-
-	public void setRequests(Set<JoinWorkspaceRequestResponse> requests) {
-		this.requests = requests;
-	}
-
 	public String getWorkspaceId() {
 		return workspaceId;
 	}
 
 	public void setWorkspaceId(String workspaceId) {
 		this.workspaceId = workspaceId;
+	}
+
+	public List<UserResponse> getUsers() {
+		return users;
+	}
+
+	public void setUsers(List<UserResponse> users) {
+		this.users = users;
+	}
+
+	public List<JoinWorkspaceRequestResponse> getRequests() {
+		return requests;
+	}
+
+	public void setRequests(List<JoinWorkspaceRequestResponse> requests) {
+		this.requests = requests;
 	}
 	
 	

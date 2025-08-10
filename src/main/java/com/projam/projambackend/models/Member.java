@@ -1,13 +1,17 @@
 package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
+import com.projam.projambackend.enums.MemberPlan;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
@@ -30,16 +34,16 @@ public class Member {
 	private String memberGmail;
 	
 	@ManyToMany(mappedBy = "members")
-	private Set<Project> projects;
+	private List<Project> projects;
 	
 	@OneToMany(mappedBy = "assignee",  cascade = CascadeType.ALL)
-	private Set<Task> assignedTasks;
+	private List<Task> assignedTasks;
 
 	@OneToMany(mappedBy = "assignedTo",  cascade = CascadeType.ALL)
-	private Set<Task> tasksAssignedTo;
+	private List<Task> tasksAssignedTo;
 	
 	@OneToMany(mappedBy = "member",  cascade = CascadeType.ALL)
-	private Set<Activity> activities;
+	private List<Activity> activities;
 	
 	@ManyToMany
 	@JoinTable(
@@ -49,12 +53,19 @@ public class Member {
 	)
 	private Set<MemberRole> memberRoles;
 	
+	@Column(name = "request_status")
+	private String requestStatus;
+	
 	@ManyToOne
 	@JoinColumn(name = "workspace_id")
 	private Workspace workspace; 
 	
 	@Column(name = "member_join_date")
 	private LocalDateTime memberJoinDate;
+	
+	@Column(name = "plan")
+	@Enumerated(EnumType.STRING)
+	private MemberPlan plan;
 
 	public String getMemberId() {
 		return memberId;
@@ -64,11 +75,11 @@ public class Member {
 		this.memberId = memberId;
 	}
 
-	public Set<Project> getProjects() {
+	public List<Project> getProjects() {
 		return projects;
 	}
 
-	public void setProjects(Set<Project> projects) {
+	public void setProjects(List<Project> projects) {
 		this.projects = projects;
 	}
 
@@ -80,27 +91,27 @@ public class Member {
 		this.memberName = memberName;
 	}
 
-	public Set<Task> getAssignedTasks() {
+	public List<Task> getAssignedTasks() {
 		return assignedTasks;
 	}
 
-	public void setAssignedTasks(Set<Task> assignedTasks) {
+	public void setAssignedTasks(List<Task> assignedTasks) {
 		this.assignedTasks = assignedTasks;
 	}
 
-	public Set<Task> getTasksAssignedTo() {
+	public List<Task> getTasksAssignedTo() {
 		return tasksAssignedTo;
 	}
 
-	public void setTasksAssignedTo(Set<Task> tasksAssignedTo) {
+	public void setTasksAssignedTo(List<Task> tasksAssignedTo) {
 		this.tasksAssignedTo = tasksAssignedTo;
 	}
 
-	public Set<Activity> getActivities() {
+	public List<Activity> getActivities() {
 		return activities;
 	}
 
-	public void setActivities(Set<Activity> activities) {
+	public void setActivities(List<Activity> activities) {
 		this.activities = activities;
 	}
 
@@ -163,5 +174,30 @@ public class Member {
 	public Member() {
 		this.memberId = NanoIdUtils.randomNanoId();
 	}
+
+	public Set<MemberRole> getMemberRoles() {
+		return memberRoles;
+	}
+
+	public void setMemberRoles(Set<MemberRole> memberRoles) {
+		this.memberRoles = memberRoles;
+	}
+
+	public String getRequestStatus() {
+		return requestStatus;
+	}
+
+	public void setRequestStatus(String requestStatus) {
+		this.requestStatus = requestStatus;
+	}
+
+	public MemberPlan getPlan() {
+		return plan;
+	}
+
+	public void setPlan(MemberPlan plan) {
+		this.plan = plan;
+	}
+	
 	
 }

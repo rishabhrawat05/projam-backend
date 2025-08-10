@@ -1,5 +1,6 @@
 package com.projam.projambackend.models;
 
+import java.util.List;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -10,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -28,10 +30,11 @@ public class Tag {
 	    joinColumns = @JoinColumn(name = "tag_id"),
 	    inverseJoinColumns = @JoinColumn(name = "member_role_id")
 	)
-	private Set<MemberRole> memberRole;
+	private List<MemberRole> memberRole;
 	
-	@ManyToMany(mappedBy = "tags")
-    private Set<Project> projects;
+	@ManyToOne
+	@JoinColumn(name = "project_id")
+    private Project project;
 
 	public String getTagId() {
 		return tagId;
@@ -49,22 +52,23 @@ public class Tag {
 		this.title = title;
 	}
 
-	public Set<MemberRole> getMemberRole() {
+	
+	public List<MemberRole> getMemberRole() {
 		return memberRole;
 	}
 
-	public void setMemberRole(Set<MemberRole> memberRole) {
+	public void setMemberRole(List<MemberRole> memberRole) {
 		this.memberRole = memberRole;
 	}
-	
-	public Set<Project> getProjects() {
-		return projects;
+
+	public Project getProject() {
+		return project;
 	}
-	
-	public void setProjects(Set<Project> projects) {
-		this.projects = projects;
+
+	public void setProject(Project project) {
+		this.project = project;
 	}
-	
+
 	public Tag() {
 		this.tagId = NanoIdUtils.randomNanoId();
 	}

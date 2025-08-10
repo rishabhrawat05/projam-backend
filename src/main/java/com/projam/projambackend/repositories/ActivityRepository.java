@@ -12,6 +12,6 @@ import com.projam.projambackend.models.Activity;
 @Repository
 public interface ActivityRepository extends JpaRepository<Activity, String> {
 
-	@Query("SELECT new com.projam.projambackend.dto.ActivityResponse( a.activityId, a.description, a.timeStamp) FROM Activity a WHERE a.project.projectId = :projectId")
+	@Query("SELECT new com.projam.projambackend.dto.ActivityResponse( a.activityId, a.description, a.timeStamp) FROM Activity a WHERE a.project.projectId = :projectId ORDER BY a.timeStamp DESC")
 	List<ActivityResponse> findAllByProject_ProjectId(String projectId);
 }

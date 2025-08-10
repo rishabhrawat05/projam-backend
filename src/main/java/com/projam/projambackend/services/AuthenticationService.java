@@ -30,6 +30,7 @@ import com.projam.projambackend.dto.RefreshTokenRequest;
 import com.projam.projambackend.dto.RefreshTokenResponse;
 import com.projam.projambackend.dto.ResendOtpRequest;
 import com.projam.projambackend.dto.SignupRequest;
+import com.projam.projambackend.dto.UserProfileResponse;
 import com.projam.projambackend.dto.UserResponse;
 import com.projam.projambackend.dto.VerifyRequest;
 import com.projam.projambackend.email.EmailUtility;
@@ -43,6 +44,8 @@ import com.projam.projambackend.models.User;
 import com.projam.projambackend.repositories.RoleRepository;
 import com.projam.projambackend.repositories.UserRepository;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Service
@@ -90,6 +93,12 @@ public class AuthenticationService {
 		if (!user.isVerified()) {
 			throw new EmailNotVerifiedException("Email Not Verified!! Please Verify Your Email");
 		}
+
+		if (!user.getAuthProviders().contains("PASSWORD")) {
+			user.getAuthProviders().add("PASSWORD");
+			userRepository.save(user);
+		}
+
 		UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getGmail());
 		String token = jwtHelper.generateToken(userDetails);
 		String refreshToken = jwtHelper.generateRefreshToken(userDetails);
@@ -97,6 +106,11 @@ public class AuthenticationService {
 		userRepository.save(user);
 		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(false).path("/")
 				.maxAge(60 * 60).sameSite("Strict").build();
+
+		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
+				.path("/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+
+		response.addHeader("Set-Cookie", refreshCookie.toString());
 
 		response.addHeader("Set-Cookie", cookie.toString());
 		LoginResponse loginResponse = new LoginResponse();
@@ -227,7 +241,7 @@ public class AuthenticationService {
 		}
 	}
 
-	public String googleLogin(String accessToken, HttpServletResponse response) {
+	public UserProfileResponse googleLogin(String accessToken, HttpServletResponse response) {
 
 		System.out.println(accessToken);
 		Map<String, Object> userInfo = getGoogleUserDetails(accessToken);
@@ -244,7 +258,7 @@ public class AuthenticationService {
 		if (user == null) {
 			user = new User();
 			user.setGmail(email);
-			user.setUsername(name);
+			user.setUsername(name.toLowerCase().replace(" ", ""));
 			user.setVerified(true);
 			user.setPassword(NanoIdUtils.randomNanoId());
 			user.setOtpGeneratedTime(LocalDateTime.now());
@@ -254,6 +268,11 @@ public class AuthenticationService {
 				roleRepository.save(role);
 			}
 			user.getRoles().add(role);
+			userRepository.save(user);
+		}
+
+		if (!user.getAuthProviders().contains("GOOGLE")) {
+			user.getAuthProviders().add("GOOGLE");
 			userRepository.save(user);
 		}
 
@@ -267,9 +286,16 @@ public class AuthenticationService {
 		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(false).path("/")
 				.maxAge(60 * 60).sameSite("Strict").build();
 
-		response.addHeader("Set-Cookie", cookie.toString());
+		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
+				.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
 
-		return "Google Account Login Successful";
+		response.addHeader("Set-Cookie", refreshCookie.toString());
+
+		response.addHeader("Set-Cookie", cookie.toString());
+		UserProfileResponse userProfileResponse = new UserProfileResponse();
+		userProfileResponse.setGmail(email);
+		userProfileResponse.setUsername(name.toLowerCase().replace(" ", ""));
+		return userProfileResponse;
 	}
 
 	public UserResponse githubLogin(String code, HttpServletResponse response) {
@@ -359,13 +385,18 @@ public class AuthenticationService {
 				userRepository.save(user);
 			}
 
+			if (!user.getAuthProviders().contains("GITHUB")) {
+				user.getAuthProviders().add("GITHUB");
+				userRepository.save(user);
+			}
+
 			UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 			String token = jwtHelper.generateToken(userDetails);
 			String refreshToken = jwtHelper.generateRefreshToken(userDetails);
 
 			user.setRefreshToken(refreshToken);
 			userRepository.save(user);
-			
+
 			UserResponse userResponse1 = new UserResponse();
 			userResponse1.setGmail(email);
 			userResponse1.setUsername(username);
@@ -375,7 +406,11 @@ public class AuthenticationService {
 
 			response.addHeader("Set-Cookie", cookie.toString());
 
-			
+			ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
+					.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+
+			response.addHeader("Set-Cookie", refreshCookie.toString());
+
 			return userResponse1;
 
 		} catch (Exception e) {
@@ -383,5 +418,86 @@ public class AuthenticationService {
 			throw new RuntimeException("Error during GitHub login: " + e.getMessage(), e);
 		}
 	}
+	
+	public RefreshTokenResponse refreshToken(HttpServletRequest request, HttpServletResponse response) {
+	    Cookie[] cookies = request.getCookies();
+	    String refreshToken = null;
+	    if (cookies != null) {
+	        for (Cookie cookie : cookies) {
+	            if ("refreshToken".equals(cookie.getName())) {
+	                refreshToken = cookie.getValue();
+	            }
+	        }
+	    }
+
+	    if (refreshToken == null) {
+	        throw new RefreshTokenExpiredException("Refresh Token missing");
+	    }
+
+	    User user = userRepository.findByRefreshToken(refreshToken)
+	            .orElseThrow(() -> new UserNotFoundException("Invalid Refresh Token"));
+
+	    if (jwtHelper.isTokenExpired(refreshToken)) {
+	        throw new RefreshTokenExpiredException("Refresh Token expired");
+	    }
+
+	    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getGmail());
+	    String newAccessToken = jwtHelper.generateToken(userDetails);
+	    String newRefreshToken = jwtHelper.generateRefreshToken(userDetails);
+
+	    user.setRefreshToken(newRefreshToken);
+	    userRepository.save(user);
+
+	    ResponseCookie accessCookie = ResponseCookie.from("token", newAccessToken)
+	            .httpOnly(true).secure(true).path("/").maxAge(60 * 60).sameSite("Strict").build();
+
+	    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+	            .httpOnly(true).secure(true).path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+
+	    response.addHeader("Set-Cookie", accessCookie.toString());
+	    response.addHeader("Set-Cookie", refreshCookie.toString());
+
+	    RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse();
+	    refreshTokenResponse.setToken(newAccessToken);
+	    return refreshTokenResponse;
+	}
+	
+	public String logout(HttpServletRequest request, HttpServletResponse response) {
+	    Cookie[] cookies = request.getCookies();
+	    String refreshToken = null;
+
+	    if (cookies != null) {
+	        for (Cookie cookie : cookies) {
+	            if ("refreshToken".equals(cookie.getName())) {
+	                refreshToken = cookie.getValue();
+	                break;
+	            }
+	        }
+	    }
+
+	    if (refreshToken != null) {
+	        userRepository.findByRefreshToken(refreshToken).ifPresent(user -> {
+	            user.setRefreshToken(null);
+	            userRepository.save(user);
+	        });
+	    }
+
+	    ResponseCookie accessCookie = ResponseCookie.from("token", "")
+	            .httpOnly(true).secure(true)
+	            .path("/").maxAge(0)
+	            .sameSite("Strict").build();
+
+	    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+	            .httpOnly(true).secure(true)
+	            .path("/projam/auth/token/refresh").maxAge(0)
+	            .sameSite("Strict").build();
+
+	    response.addHeader("Set-Cookie", accessCookie.toString());
+	    response.addHeader("Set-Cookie", refreshCookie.toString());
+
+	    return "Logged out successfully";
+	}
+
+
 
 }

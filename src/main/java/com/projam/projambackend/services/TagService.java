@@ -38,17 +38,28 @@ public class TagService {
 	public String createTag(TagRequest tagRequest, String projectId) {
 		Tag tag = new Tag();
 		Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
-		tag.setProjects(Set.of(project));
+		tag.setProject(project);
 		tag.setTitle(tagRequest.getTitle().toLowerCase().replace(" ", ""));
-		Set<MemberRole> roles = tagRequest.getMemberRoleId().stream()
+		List<MemberRole> roles = tagRequest.getMemberRoleId().stream()
 			        .map(id -> memberRoleRepository.findById(id)
 			            .orElseThrow(() -> new RuntimeException("Role not found")))
-			        .collect(Collectors.toSet());
+			        .collect(Collectors.toList());
 		tag.setMemberRole(roles);
 		project.getTags().add(tag);
 		projectRepository.save(project);
 		tagRepository.save(tag);
 		return "Tag Created Successfully";
+		
+	}
+	
+	public List<String> suggestTags(String projectId, String query){
+		String queryParam = query + "%";
+		return tagRepository.findAllTagNameByProjectIdAndQuery(projectId, queryParam);
+		
+	}
+	
+	public List<String> suggestTags(String projectId){
+		return tagRepository.findAllTagNameByProjectId(projectId);
 		
 	}
 }

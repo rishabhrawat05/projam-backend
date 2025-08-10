@@ -16,6 +16,16 @@ public interface TagRepository extends JpaRepository<Tag, String> {
 
 	Optional<Tag> findByTitle(String title);
 	
-	@Query("SELECT new com.projam.projambackend.dto.TagResponse(tr.tagId, tr.title) FROM Tag tr JOIN tr.projects p WHERE p.projectId = :projectId")
+	@Query("SELECT new com.projam.projambackend.dto.TagResponse(tr.tagId, tr.title) FROM Tag tr JOIN tr.project p WHERE p.projectId = :projectId")
 	List<TagResponse> findAllByProjectId(@Param("projectId") String projectId);
+	
+	@Query("""
+			SELECT t.title FROM Tag t WHERE t.project.projectId = :projectId AND LOWER(t.title) LIKE LOWER(:query)
+			""")
+	List<String> findAllTagNameByProjectIdAndQuery(@Param("projectId") String projectId, @Param("query") String query);
+	
+	@Query("""
+			SELECT t.title FROM Tag t WHERE t.project.projectId = :projectId
+			""")
+	List<String> findAllTagNameByProjectId(@Param("projectId") String projectId);
 }

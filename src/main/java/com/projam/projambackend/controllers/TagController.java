@@ -33,4 +33,17 @@ public class TagController {
 	public ResponseEntity<?> createNewTag(@RequestBody TagRequest tagRequest, @RequestParam String projectId){
 		return ResponseEntity.ok(tagService.createTag(tagRequest, projectId));
 	}
+	
+	@GetMapping("/suggest")
+	public ResponseEntity<List<String>> suggestTags(
+			@RequestParam String projectId,
+			@RequestParam(required = false) String query
+			){
+		if(query == null) {
+			return ResponseEntity.ok(tagService.suggestTags(projectId));
+		}
+		else {
+			return ResponseEntity.ok(tagService.suggestTags(projectId, query));
+		}
+	}
 }

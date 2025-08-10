@@ -1,14 +1,17 @@
 package com.projam.projambackend.models;
 
 import java.time.Instant;
+import java.util.List;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -30,9 +33,11 @@ public class GithubInstallation {
     @Column(name = "connected_at")
     private Instant connectedAt;
     
-    @ManyToOne
-    @JoinColumn(name = "workspaceId")
-    private Workspace workspace;
+    @OneToMany(mappedBy = "githubInstallation")
+    private List<Project> projects;
+    
+    @Column(name = "admin_gmail")
+    private String adminGmail;
 
 	public String getId() {
 		return id;
@@ -74,16 +79,24 @@ public class GithubInstallation {
 		this.connectedAt = connectedAt;
 	}
 
-	public Workspace getWorkspace() {
-		return workspace;
-	}
-
-	public void setWorkspace(Workspace workspace) {
-		this.workspace = workspace;
-	}
-	
 	public GithubInstallation() {
 		this.id = NanoIdUtils.randomNanoId();
+	}
+
+	public List<Project> getProjects() {
+		return projects;
+	}
+
+	public void setProjects(List<Project> projects) {
+		this.projects = projects;
+	}
+
+	public String getAdminGmail() {
+		return adminGmail;
+	}
+
+	public void setAdminGmail(String adminGmail) {
+		this.adminGmail = adminGmail;
 	}
 
 	

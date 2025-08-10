@@ -1,5 +1,7 @@
 package com.projam.projambackend.controllers;
 
+import java.security.Principal;
+
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -84,8 +86,8 @@ public class WorkspaceController {
 	public Page<?> getAllWorkspacesByUser(
 			@RequestParam(defaultValue = "0") int page,
 			@RequestParam(defaultValue = "5") int size, 
-			@RequestParam String gmail) {
-		return workspaceService.getAllWorkspacesSummaryByUser(page, size, gmail);
+			Principal principal) {
+		return workspaceService.getAllWorkspacesSummaryByUser(page, size, principal.getName());
 
 	}
 	
@@ -99,5 +101,10 @@ public class WorkspaceController {
 	@GetMapping("/get/joincode")
 	public ResponseEntity<?> getWorkspaceJoinCodeByWorkspaceId(@RequestParam String workspaceId){
 		return ResponseEntity.ok(workspaceService.getWorkspaceJoinCodeByWorkspaceId(workspaceId));
+	}
+	
+	@GetMapping("/reject/request")
+	public ResponseEntity<?> rejectSingleJoinRequest(@RequestParam String requestId) {
+		return ResponseEntity.ok(workspaceService.rejectSingleJoinRequest(requestId));
 	}
 }

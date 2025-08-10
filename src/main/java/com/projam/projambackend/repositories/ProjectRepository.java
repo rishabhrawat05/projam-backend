@@ -48,7 +48,7 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 		    LEFT JOIN FETCH m.memberRoles
 		    LEFT JOIN FETCH p.tags tag
 		    LEFT JOIN FETCH tag.memberRole
-		    LEFT JOIN FETCH tag.projects
+		    LEFT JOIN FETCH tag.project
 		    WHERE p.projectId = :projectId
 		""")
 	Optional<Project> findProjectWithAllRelations(@Param("projectId") String projectId);
@@ -62,7 +62,21 @@ public interface ProjectRepository extends JpaRepository<Project, String> {
 			+ "GROUP BY p.projectId, p.projectName, p.isPrivate, p.startDate, p.endDate, p.projectStatus, p.deletionMarkedAt")
 	List<ProjectResponse> findAllByProjectStatusAndWorkspaceId(@Param("projectStatus") ProjectStatus projectStatus, @Param("workspaceId") String workspaceId);
 	
-	
+	@Query("SELECT new com.projam.projambackend.dto.ProjectResponse(" +
+		       "p.projectId, p.projectName, p.isPrivate, p.startDate, " +
+		       "p.endDate, p.projectStatus, p.deletionMarkedAt) " +
+		       "FROM Project p " +
+		       "JOIN p.workspace w " +
+		       "JOIN p.members m " +
+		       "WHERE w.workspaceId = :workspaceId " +
+		       "AND m.memberGmail = :email " +
+		       "AND p.projectStatus NOT LIKE 'DELETION%' " +
+		       "AND (LOWER(p.projectName) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+		List<ProjectResponse> findProjectNameByWorkspaceIdAndEmailAndKeyword(
+		    @Param("workspaceId") String workspaceId,
+		    @Param("email") String email,
+		    @Param("keyword") String keyword
+		);
 
 }
 

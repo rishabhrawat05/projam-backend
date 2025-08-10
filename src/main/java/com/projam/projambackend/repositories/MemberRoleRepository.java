@@ -30,4 +30,6 @@ public interface MemberRoleRepository extends JpaRepository<MemberRole, String> 
 	Optional<MemberRole> findByRoleNameAndProject_ProjectId(String roleName, String projectId);
 	
 
+	Optional<MemberRole> findByMemberRoleIdAndProject_ProjectId(String memberRoleId, String projectId);
+	
 }

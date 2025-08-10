@@ -1,6 +1,5 @@
 package com.projam.projambackend.services;
 
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -91,6 +90,7 @@ public class TaskColumnService {
 	
 	public TaskColumnResponse mapToTaskColumnResponse(TaskColumn column) {
 	    TaskColumnResponse dto = new TaskColumnResponse();
+	    dto.setTaskColumnId(column.getTaskColumnId());
 	    dto.setTaskColumnName(column.getTaskColumnName());
 	    dto.setTaskColumnColor(column.getTaskColumnColor());
 	    dto.setProjectId(column.getProject().getProjectId());
@@ -101,8 +101,6 @@ public class TaskColumnService {
 	            .map(this::mapToTaskResponse)
 	            .sorted(Comparator.comparing(TaskResponse::getCreatedAt).reversed())
 	            .collect(Collectors.toList());
-
-	    dto.setTasks(sortedTasks);
 	    return dto;
 	}
 	
@@ -131,9 +129,9 @@ public class TaskColumnService {
 	        dto.setAssignedTo(mapToMemberResponse(task.getAssignedTo()));
 
 	    if(task.getTags() != null) {
-	    Set<TagRequest> tags = task.getTags().stream()
+	    List<TagRequest> tags = task.getTags().stream()
 	        .map(this::mapToTagRequest)
-	        .collect(Collectors.toSet());
+	        .collect(Collectors.toList());
 	    dto.setTags(tags);
 	    }
 	    else dto.setTags(null);
@@ -153,11 +151,20 @@ public class TaskColumnService {
 	    TagRequest tagDto = new TagRequest();
 	    tagDto.setTitle(tag.getTitle());
 	    
-	    Set<String> memberRoleIds = tag.getMemberRole().stream()
+	    List<String> memberRoleIds = tag.getMemberRole().stream()
 	        .map(role -> role.getMemberRoleId()) 
-	        .collect(Collectors.toSet());
+	        .collect(Collectors.toList());
 
 	    tagDto.setMemberRoleId(memberRoleIds);
 	    return tagDto;
+	}
+	
+	public List<String> suggestTaskColumn(String projectId){
+		return taskColumnRepository.findByProjectId(projectId);
+	}
+	
+	public List<String> suggestTaskColumnAndQuery(String projectId, String query){
+		String queryParam = "%" + query;
+		return taskColumnRepository.findByProjectIdAndQuery(projectId, queryParam);
 	}
 }

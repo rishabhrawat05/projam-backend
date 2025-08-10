@@ -2,16 +2,19 @@ package com.projam.projambackend.services;
 
 import java.util.List;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 
 import com.projam.projambackend.dto.MemberRoleRequest;
 import com.projam.projambackend.dto.MemberRoleResponse;
 import com.projam.projambackend.exceptions.MemberNotFoundException;
+import com.projam.projambackend.exceptions.MemberRoleNotFoundException;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
 import com.projam.projambackend.models.Member;
 import com.projam.projambackend.models.MemberRole;
 import com.projam.projambackend.models.Project;
+import com.projam.projambackend.models.Tag;
 import com.projam.projambackend.repositories.MemberRepository;
 import com.projam.projambackend.repositories.MemberRoleRepository;
 import com.projam.projambackend.repositories.ProjectRepository;
@@ -97,5 +100,76 @@ public class MemberRoleService {
 		return memberRoleRepository.getMemberRoleByProjectIdAndMemberGmail(projectId, memberGmail);
 	}
 	
+	public MemberRoleResponse updateMemberRolePermissions(MemberRoleRequest memberRoleRequest, String projectId, String email) {
+	    Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId)
+	            .orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+
+	    boolean hasPermission = member.getMemberRole().stream()
+	            .anyMatch(role -> role.isCanManageRolesAndPermission());
+
+	    if (!hasPermission) {
+	        throw new AccessDeniedException("Update Member Role Access is denied for user");
+	    }
+
+	    MemberRole memberRole = memberRoleRepository.findByMemberRoleIdAndProject_ProjectId(
+	            memberRoleRequest.getMemberRoleId(), projectId)
+	            .orElseThrow(() -> new MemberRoleNotFoundException("Member Role Not Found"));
+
+	    updateRolePermissions(memberRole, memberRoleRequest);
+	    memberRoleRepository.save(memberRole);
+
+	    return memberRoleToMemberRoleResponse(memberRole);
+	}
+
+	private void updateRolePermissions(MemberRole memberRole, MemberRoleRequest request) {
+		if(memberRole.getRoleName().equals("ADMIN")) {
+			throw new AccessDeniedException("ADMIN permission cannot be updated");
+		}
+	    memberRole.setCanAssignTask(request.isCanAssignTask());
+	    memberRole.setCanCreateColumn(request.isCanCreateColumn());
+	    memberRole.setCanCreateTask(request.isCanCreateTask());
+	    memberRole.setCanDeleteColumn(request.isCanDeleteColumn());
+	    memberRole.setCanDeleteProject(request.isCanDeleteProject());
+	    memberRole.setCanDeleteTask(request.isCanDeleteTask());
+	    memberRole.setCanEditProject(request.isCanEditProject());
+	    memberRole.setCanEditTask(request.isCanEditTask());
+	    memberRole.setCanManageMembers(request.isCanManageMembers());
+	    memberRole.setCanManageRolesAndPermission(request.isCanManageRolesAndPermission());
+	    memberRole.setCanManageGithub(request.isCanManageGithub());
+	}
+
+	@Transactional
+	public String deleteMemberRole(String memberRoleId, String projectId, String email) {
+	    Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId)
+	            .orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+
+	    boolean hasPermission = member.getMemberRole().stream()
+	            .anyMatch(role -> role.isCanManageRolesAndPermission());
+
+	    if (!hasPermission) {
+	        throw new AccessDeniedException("Delete Member Role Access is denied for user");
+	    }
+
+	    MemberRole memberRole = memberRoleRepository.findById(memberRoleId)
+	            .orElseThrow(() -> new MemberRoleNotFoundException("Member Role Not Found"));
+	    if(memberRole.getRoleName().equals("ADMIN")) {
+	    	throw new IllegalStateException("Cannot delete role ADMIN");
+	    }
+	    List<Member> membersUsingRole = memberRepository.findByMemberRole_MemberRoleId(memberRoleId);
+	    for (Member member2 : membersUsingRole) {
+	        member2.getMemberRole().removeIf(role -> role.getMemberRoleId().equals(memberRoleId));
+	        memberRepository.save(member2);
+	    }
+
+	    for (Tag tag : memberRole.getTags()) {
+	        tag.setMemberRole(null);
+	    }
+	    memberRole.getTags().clear();
+
+	    memberRoleRepository.delete(memberRole);
+
+	    return "Member role deleted successfully";
+	}
+
 	
 }

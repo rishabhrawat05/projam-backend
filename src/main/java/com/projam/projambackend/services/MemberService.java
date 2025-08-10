@@ -9,9 +9,15 @@ import org.springframework.stereotype.Service;
 
 import com.projam.projambackend.dto.MemberRequest;
 import com.projam.projambackend.dto.MemberResponse;
+import com.projam.projambackend.dto.MemberSummary;
+import com.projam.projambackend.exceptions.MemberNotFoundException;
+import com.projam.projambackend.exceptions.ProjectNotFoundException;
 import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
+import com.projam.projambackend.models.Member;
+import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.Workspace;
 import com.projam.projambackend.repositories.MemberRepository;
+import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
 
 @Service
@@ -22,12 +28,15 @@ public class MemberService {
 	private final WorkspaceService workspaceService;
 
 	private final WorkspaceRepository workspaceRepository;
+	
+	private final ProjectRepository projectRepository;
 
 	public MemberService(MemberRepository memberRepository, WorkspaceService workspaceService,
-			WorkspaceRepository workspaceRepository) {
+			WorkspaceRepository workspaceRepository, ProjectRepository projectRepository) {
 		this.memberRepository = memberRepository;
 		this.workspaceService = workspaceService;
 		this.workspaceRepository = workspaceRepository;
+		this.projectRepository = projectRepository;
 	}
 
 	public String addMemberToWorkspace(MemberRequest memberRequest) {
@@ -50,4 +59,32 @@ public class MemberService {
 	public List<MemberResponse> getAllMembersByKeyword(String keyword, String projectId){
 		return memberRepository.getAllMembersByKeyword(keyword, projectId);
 	}
+	
+	public String removeMemberFromProject(String memberId, String projectId) {
+		Member member = memberRepository.findById(memberId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
+		project.getMembers().remove(member);
+		member.getProjects().remove(project);
+		projectRepository.save(project);
+		memberRepository.save(member);
+		return "Member Removed From Project";
+	}
+	
+	public List<String> suggestMemberName(String query, String projectId){
+		String queryParam = query + "%";
+		return memberRepository.findAllMemberNameByProjectIdAndQuery(projectId, queryParam);
+	}
+	
+	public List<String> suggestMemberName(String projectId){
+		return memberRepository.findAllMemberNameByProjectId(projectId);
+	}
+	
+	public List<MemberSummary> findAllMemberNameByWorkspaceId(String workspaceId, String projectId){
+		return memberRepository.findAllMemberNameByWorkspaceId(workspaceId, projectId);
+	}
+	
+	public List<MemberResponse> getAllMembersByKeywordAndWorkspaceId(String keyword, String workspaceId){
+		return memberRepository.getAllMembersByKeywordAndWorkspaceId(keyword, workspaceId);
+	}
+	
 }

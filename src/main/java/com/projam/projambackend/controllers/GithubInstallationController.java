@@ -1,11 +1,15 @@
 package com.projam.projambackend.controllers;
 
+import java.security.Principal;
 import java.util.Base64;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException.Unauthorized;
 import org.springframework.web.servlet.view.RedirectView;
 
+import com.projam.projambackend.dto.GithubLinkRequest;
 import com.projam.projambackend.services.GithubInstallationService;
 
 @RestController
@@ -21,21 +25,27 @@ public class GithubInstallationController {
 
     @GetMapping("/callback")
     public RedirectView githubCallback(@RequestParam("installation_id") String installationId, @RequestParam("state") String state) throws Exception {
-        
 
-    	String[] parts = state.split("--");
-    	if (parts.length != 2) {
-    	    throw new IllegalArgumentException("Invalid state parameter");
-    	}
-
-    	String projectId = new String(Base64.getDecoder().decode(parts[0]));
-    	String workspaceId = new String(Base64.getDecoder().decode(parts[1]));
-        
-        githubInstallationService.saveInstallation(installationId, workspaceId);
-
-        String redirectUrl = "http://localhost:5173/workspace/" + workspaceId + "/project/" + projectId + "/github";
+    	String redirectUrl = "http://localhost:5173/github/callback?installation_id=" + installationId + "&state=" + state;
         return new RedirectView(redirectUrl);
     }
+    
+    @PutMapping("/link-installation")
+    public ResponseEntity<?> linkInstallation(@RequestBody GithubLinkRequest request, Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatusCode.valueOf(401)).body("Not logged in");
+        }
+
+        String userEmail = principal.getName(); 
+        try {
+			githubInstallationService.saveInstallation(request.getInstallationId(), request.getWorkspaceId(), request.getProjectId(), userEmail);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+        return ResponseEntity.ok("GitHub installation linked successfully");
+    }
+
 
     @GetMapping("/repos")
     public ResponseEntity<?> getAuthorizedRepos(@RequestParam String workspaceId) throws Exception {
@@ -57,5 +67,13 @@ public class GithubInstallationController {
     public ResponseEntity<?> isProjectConnected(@RequestParam String projectId) {
         return ResponseEntity.ok(githubInstallationService.isProjectConnected(projectId));
     }
+    
+    @PutMapping("/disconnect-repo")
+    public ResponseEntity<?> disconnectRepo(@RequestParam String projectId, Principal principal) {
+    	System.out.println(principal.getName());
+        githubInstallationService.disconnectRepoFromProject(projectId, principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
 
 }

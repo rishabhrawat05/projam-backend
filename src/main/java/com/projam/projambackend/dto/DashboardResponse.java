@@ -11,7 +11,7 @@ public class DashboardResponse {
 
     private List<Task> todayTask;
 
-    private Set<ActivityResponse> activity;
+    private List<ActivityResponse> activity;
 
     private Integer projectProgress;
 
@@ -21,7 +21,7 @@ public class DashboardResponse {
 
     private List<TaskAssignmentSummaryDto> recentTasks;
 
-    private Set<String> userRoles; 
+    private List<String> userRoles; 
 
     private TeamStats teamStats; 
 
@@ -32,16 +32,20 @@ public class DashboardResponse {
     public void setTodayTask(List<Task> todayTask) {
         this.todayTask = todayTask;
     }
+    
+    public List<ActivityResponse> getActivity() {
+		return activity;
+	}
 
-    public Set<ActivityResponse> getActivity() {
-        return activity;
-    }
+	public void setActivity(List<ActivityResponse> activity) {
+		this.activity = activity;
+	}
 
-    public void setActivity(Set<ActivityResponse> activity) {
-        this.activity = activity;
-    }
+	public void setUserRoles(List<String> userRoles) {
+		this.userRoles = userRoles;
+	}
 
-    public Integer getProjectProgress() {
+	public Integer getProjectProgress() {
         return projectProgress;
     }
 
@@ -71,14 +75,6 @@ public class DashboardResponse {
 
     public void setRecentTasks(List<TaskAssignmentSummaryDto> recentTasks) {
         this.recentTasks = recentTasks;
-    }
-
-    public Set<String> getUserRoles() {
-        return userRoles;
-    }
-
-    public void setUserRoles(Set<String> userRoles) {
-        this.userRoles = userRoles;
     }
 
     public TeamStats getTeamStats() {

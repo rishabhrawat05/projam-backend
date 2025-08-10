@@ -1,9 +1,8 @@
 package com.projam.projambackend.dto;
 
-import java.util.List;
-import java.util.Set;
-
 public class TaskColumnResponse {
+	
+	private String taskColumnId;
 
 	private String taskColumnName;
 
@@ -15,7 +14,14 @@ public class TaskColumnResponse {
 	
 	private int taskColumnIndex;
 	
-	private List<TaskResponse> tasks;
+
+	public String getTaskColumnId() {
+		return taskColumnId;
+	}
+
+	public void setTaskColumnId(String taskColumnId) {
+		this.taskColumnId = taskColumnId;
+	}
 
 	public String getTaskColumnName() {
 		return taskColumnName;
@@ -49,14 +55,6 @@ public class TaskColumnResponse {
 		this.projectId = projectId;
 	}
 
-	public List<TaskResponse> getTasks() {
-		return tasks;
-	}
-
-	public void setTasks(List<TaskResponse> tasks) {
-		this.tasks = tasks;
-	}
-
 	public int getTaskColumnIndex() {
 		return taskColumnIndex;
 	}
@@ -64,7 +62,10 @@ public class TaskColumnResponse {
 	public void setTaskColumnIndex(int taskColumnIndex) {
 		this.taskColumnIndex = taskColumnIndex;
 	}
-
 	
+	public TaskColumnResponse() {
+		
+	}
+
 	
 }

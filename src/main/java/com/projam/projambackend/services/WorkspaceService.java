@@ -20,22 +20,27 @@ import com.projam.projambackend.dto.WorkspaceRequest;
 import com.projam.projambackend.dto.WorkspaceResponse;
 import com.projam.projambackend.dto.WorkspaceSummaryDto;
 import com.projam.projambackend.email.EmailUtility;
+import com.projam.projambackend.enums.MemberPlan;
 import com.projam.projambackend.exceptions.JoinWorkspaceRequestAlreadyExistException;
 import com.projam.projambackend.exceptions.JoinWorkspaceRequestNotFound;
 import com.projam.projambackend.exceptions.JoinWorkspaceTokenAlreadyUsedException;
 import com.projam.projambackend.exceptions.JoinWorkspaceTokenExpiredException;
+import com.projam.projambackend.exceptions.MemberNotFoundException;
 import com.projam.projambackend.exceptions.UserNotFoundException;
 import com.projam.projambackend.exceptions.WorkspaceAlreadyPresentException;
 import com.projam.projambackend.exceptions.WorkspaceInviteNotAllowedException;
+import com.projam.projambackend.exceptions.WorkspaceMaxMemberCountReachedException;
 import com.projam.projambackend.exceptions.WorkspaceNotFoundException;
 import com.projam.projambackend.models.JoinWorkspaceRequest;
 import com.projam.projambackend.models.JoinWorkspaceToken;
 import com.projam.projambackend.models.Member;
+import com.projam.projambackend.models.Project;
 import com.projam.projambackend.models.User;
 import com.projam.projambackend.models.Workspace;
 import com.projam.projambackend.repositories.JoinWorkspaceRequestRepository;
 import com.projam.projambackend.repositories.JoinWorkspaceTokenRepository;
 import com.projam.projambackend.repositories.MemberRepository;
+import com.projam.projambackend.repositories.ProjectRepository;
 import com.projam.projambackend.repositories.UserRepository;
 import com.projam.projambackend.repositories.WorkspaceRepository;
 
@@ -47,23 +52,28 @@ public class WorkspaceService {
 	private final WorkspaceRepository workspaceRepository;
 
 	private final EmailUtility emailUtility;
-	
+
 	private final JoinWorkspaceTokenRepository joinWorkspaceTokenRepository;
-	
+
 	private final UserRepository userRepository;
-	
+
 	private final JoinWorkspaceRequestRepository joinWorkspaceRequestRepository;
-	
+
 	private final MemberRepository memberRepository;
 
-	public WorkspaceService(WorkspaceRepository workspaceRepository, EmailUtility emailUtility, JoinWorkspaceTokenRepository joinWorkspaceTokenRepository, UserRepository userRepository, JoinWorkspaceRequestRepository joinWorkspaceRequestRepository, MemberRepository memberRepository) {
+	private final ProjectRepository projectRepository;
+
+	public WorkspaceService(WorkspaceRepository workspaceRepository, EmailUtility emailUtility,
+			JoinWorkspaceTokenRepository joinWorkspaceTokenRepository, UserRepository userRepository,
+			JoinWorkspaceRequestRepository joinWorkspaceRequestRepository, MemberRepository memberRepository,
+			ProjectRepository projectRepository) {
 		this.workspaceRepository = workspaceRepository;
 		this.emailUtility = emailUtility;
 		this.joinWorkspaceTokenRepository = joinWorkspaceTokenRepository;
 		this.userRepository = userRepository;
 		this.joinWorkspaceRequestRepository = joinWorkspaceRequestRepository;
 		this.memberRepository = memberRepository;
-		
+		this.projectRepository = projectRepository;
 	}
 
 	@Transactional
@@ -74,7 +84,8 @@ public class WorkspaceService {
 					"Workspace with the name " + workspaceRequest.getWorkspaceName() + " is already present");
 		}
 		Workspace newWorkspace = new Workspace();
-		User user = userRepository.findByGmail(workspaceRequest.getAdminGmail()).orElseThrow(() -> new UserNotFoundException("user not found"));
+		User user = userRepository.findByGmail(workspaceRequest.getAdminGmail())
+				.orElseThrow(() -> new UserNotFoundException("user not found"));
 		newWorkspace.setWorkspaceName(workspaceRequest.getWorkspaceName());
 		newWorkspace.setOrganizationName(workspaceRequest.getOrganizationName());
 		newWorkspace.setWorkspaceType(workspaceRequest.getWorkspaceType());
@@ -88,10 +99,9 @@ public class WorkspaceService {
 		while (workspaceRepository.findByWorkspaceSlug(slug).isPresent()) {
 			uniqueSlug = slug + "-" + counter++;
 		}
-		if(!newWorkspace.getIsPrivate()) {
+		if (!newWorkspace.getIsPrivate()) {
 			newWorkspace.setJoinCode(newWorkspace.generateJoinCode());
-		}
-		else {
+		} else {
 			newWorkspace.setJoinCode(null);
 		}
 		Member member = new Member();
@@ -101,8 +111,10 @@ public class WorkspaceService {
 		newWorkspace.setIsAllowedInvites(workspaceRequest.getIsAllowedInvites());
 		member.setMemberName(user.getUserName());
 		member.setMemberGmail(user.getGmail());
+		member.setPlan(MemberPlan.FREE);
 		member.setMemberJoinDate(LocalDateTime.now());
 		newWorkspace.addMember(member);
+		newWorkspace.setMemberCount(1);
 		memberRepository.save(member);
 		workspaceRepository.save(newWorkspace);
 		user.addWorkspace(newWorkspace);
@@ -128,20 +140,20 @@ public class WorkspaceService {
 			workspace.setWorkspaceType(workspaceRequest.getWorkspaceType());
 		}
 
-		if(workspaceRequest.getAdminGmail() != null) {
+		if (workspaceRequest.getAdminGmail() != null) {
 			workspace.setAdminGmail(workspaceRequest.getAdminGmail());
 		}
-		
-		if(workspaceRequest.getIsAllowedInvites() != null) {
+
+		if (workspaceRequest.getIsAllowedInvites() != null) {
 			workspace.setIsAllowedInvites(workspaceRequest.getIsAllowedInvites());
 		}
-		
-		if(workspaceRequest.getWorkspaceRole() != null) {
+
+		if (workspaceRequest.getWorkspaceRole() != null) {
 			workspace.setWorkspaceRole(workspaceRequest.getWorkspaceRole());
 		}
-		
+
 		if (workspaceRequest.getUsers() != null) {
-			Set<User> workspaceUsers = workspace.getUsers();
+			List<User> workspaceUsers = workspace.getUsers();
 
 			for (User newUser : workspaceRequest.getUsers()) {
 				if (!workspaceUsers.contains(newUser)) {
@@ -159,14 +171,14 @@ public class WorkspaceService {
 	public WorkspaceResponse workspaceToWorkspaceResponse(Workspace workspace) {
 		WorkspaceResponse workspaceResponse = new WorkspaceResponse();
 		workspaceResponse.setOrganizationName(workspace.getOrganizationName());
-		Set<UserResponse> userResponse = workspace.getUsers().stream().map(user -> {
+		List<UserResponse> userResponse = workspace.getUsers().stream().map(user -> {
 			UserResponse ur = new UserResponse();
 			ur.setGmail(user.getGmail());
 			ur.setRoles(user.getRoles());
 			ur.setUsername(user.getUsername());
 			ur.setVerified(user.isVerified());
 			return ur;
-		}).collect(Collectors.toSet());
+		}).collect(Collectors.toList());
 		workspaceResponse.setUsers(userResponse);
 		workspaceResponse.setWorkspaceName(workspace.getWorkspaceName());
 		workspaceResponse.setWorkspaceType(workspace.getWorkspaceType());
@@ -176,12 +188,13 @@ public class WorkspaceService {
 		workspaceResponse.setWorkspaceType(workspace.getWorkspaceType());
 		workspaceResponse.setJoinCode(workspace.getJoinCode());
 		workspaceResponse.setIsPrivate(workspace.getIsPrivate());
-		Set<JoinWorkspaceRequestResponse> joinWorkspaceRequestResponses = workspace.getRequests().stream().map(request -> {
-			JoinWorkspaceRequestResponse jr = new JoinWorkspaceRequestResponse();
-			jr.setRequestTime(request.getRequestTime());
-			jr.setStatus(request.getStatus());
-			return jr;
-		}).collect(Collectors.toSet());
+		List<JoinWorkspaceRequestResponse> joinWorkspaceRequestResponses = workspace.getRequests().stream()
+				.map(request -> {
+					JoinWorkspaceRequestResponse jr = new JoinWorkspaceRequestResponse();
+					jr.setRequestTime(request.getRequestTime());
+					jr.setStatus(request.getStatus());
+					return jr;
+				}).collect(Collectors.toList());
 		workspaceResponse.setRequests(joinWorkspaceRequestResponses);
 		if (workspace.getWorkspaceSlug() != null) {
 			workspaceResponse.setWorkspaceSlug(workspace.getWorkspaceSlug());
@@ -221,21 +234,26 @@ public class WorkspaceService {
 
 	@Transactional
 	public String joinWorkspace(JoinWorkspaceRequestDto joinWorkspaceRequestDto) {
-		Optional<Workspace> workspaceOpt = workspaceRepository.findByWorkspaceSlug(joinWorkspaceRequestDto.getWorkspaceSlug());
+		Optional<Workspace> workspaceOpt = workspaceRepository
+				.findByWorkspaceSlug(joinWorkspaceRequestDto.getWorkspaceSlug());
 		if (workspaceOpt.isEmpty()) {
-			throw new WorkspaceNotFoundException("Workspace Not Found with slug " + joinWorkspaceRequestDto.getWorkspaceSlug());
+			throw new WorkspaceNotFoundException(
+					"Workspace Not Found with slug " + joinWorkspaceRequestDto.getWorkspaceSlug());
 		}
 		Workspace workspace = workspaceOpt.get();
 		if (!workspace.getIsAllowedInvites()) {
 			throw new WorkspaceInviteNotAllowedException("Sorry but the workspace not allow invites");
 		}
-		
-		if(workspace.getIsPrivate()) {
+
+		if (workspace.getIsPrivate()) {
 			throw new WorkspaceNotFoundException("Workspace is private.");
 		}
-		
-		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
-		if(joinWorkspaceRequestRepository.findByUser(user).isPresent()) {
+
+		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail())
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		JoinWorkspaceRequest joinRequest = joinWorkspaceRequestRepository.findByUser(user)
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		if (joinRequest != null && joinRequest.getStatus().toString().equals("PENDING")) {
 			throw new JoinWorkspaceRequestAlreadyExistException("Join Workspace Request Already Exists");
 		}
 		JoinWorkspaceRequest joinWorkspaceRequest = new JoinWorkspaceRequest();
@@ -264,23 +282,26 @@ public class WorkspaceService {
 
 		return "http://localhost:8080/projam/workspace/join/workspace/" + token;
 	}
-	
+
 	@Transactional
 	public RedirectView joinWorkspaceWithInviteLink(String token) {
-		JoinWorkspaceToken joinWorkspaceToken = joinWorkspaceTokenRepository.findByToken(token).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
-		if(joinWorkspaceToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+		JoinWorkspaceToken joinWorkspaceToken = joinWorkspaceTokenRepository.findByToken(token)
+				.orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+		if (joinWorkspaceToken.getExpiresAt().isBefore(LocalDateTime.now())) {
 			throw new JoinWorkspaceTokenExpiredException("The join workspace token has been expired");
 		}
-		if(joinWorkspaceToken.getUsed()) {
-			throw new JoinWorkspaceTokenAlreadyUsedException("Invite Link can be used only once and it has been already Used");
+		if (joinWorkspaceToken.getUsed()) {
+			throw new JoinWorkspaceTokenAlreadyUsedException(
+					"Invite Link can be used only once and it has been already Used");
 		}
-		User user = userRepository.findByGmail(joinWorkspaceToken.getEmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		User user = userRepository.findByGmail(joinWorkspaceToken.getEmail())
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		Workspace workspace = joinWorkspaceToken.getWorkspace();
+		List<Project> projects = workspace.getProjects();
 		if (!user.getWorkspaces().contains(workspace)) {
-	        user.getWorkspaces().add(workspace);
-	        workspace.getUsers().add(user);
-	    }
-		else {
+			user.getWorkspaces().add(workspace);
+			workspace.getUsers().add(user);
+		} else {
 			return new RedirectView("http://localhost:5173/home/workspaces");
 		}
 		Member member = new Member();
@@ -291,118 +312,191 @@ public class WorkspaceService {
 		member.setMemberGmail(user.getGmail());
 		member.setMemberJoinDate(LocalDateTime.now());
 		workspace.addMember(member);
+		if (projects != null) {
+			for (Project project : projects) {
+				if (!project.getIsPrivate()) {
+					project.addMember(member);
+					member.addProject(project);
+				}
+			}
+		}
 		memberRepository.save(member);
 		userRepository.save(user);
 		workspaceRepository.save(workspace);
 		joinWorkspaceTokenRepository.save(joinWorkspaceToken);
 		return new RedirectView("http://localhost:5173/home/workspaces");
 	}
-	
+
 	@Transactional
 	public String acceptSingleJoinRequest(String requestId) {
-		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId).orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
+		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId)
+				.orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
 		joinWorkspaceRequest.setStatus("APPROVED");
 		User user = joinWorkspaceRequest.getUser();
 		Member member = new Member();
 		Workspace workspace = joinWorkspaceRequest.getWorkspace();
-		workspace.addUser(user);
-		user.addWorkspace(workspace);
-		member.setMemberName(user.getUserName());
-		member.setMemberGmail(user.getGmail());
-		member.setMemberJoinDate(LocalDateTime.now());
-		workspace.addMember(member);
-		memberRepository.save(member);
-		workspaceRepository.save(workspace);
-		userRepository.save(user);
-		joinWorkspaceRequestRepository.save(joinWorkspaceRequest);
-		emailUtility.sendEmail(joinWorkspaceRequest.getUser().getGmail(), "Workspace " + joinWorkspaceRequest.getWorkspace().getWorkspaceName() + " Welcomes You", "Your Request to Join Workspace has been Accepted!");
-		return "Your Request to Join Workspace has been Accepted!!";
-	}
-	
-	@Transactional
-	public String acceptAllJoinRequest(String workspaceId) {
-		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
-		Set<JoinWorkspaceRequest> requests = workspace.getRequests();
-		for(JoinWorkspaceRequest request : requests) {
-			if("PENDING".equals(request.getStatus())) {
-				request.setStatus("APPROVED");
-				Member member = new Member();
-				User user = request.getUser();
-				user.addWorkspace(workspace);
+		Member admin = memberRepository
+				.findByMemberGmailAndWorkspaceId(workspace.getAdminGmail(), workspace.getWorkspaceId())
+				.orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		List<Project> projects = workspace.getProjects();
+
+		if (admin.getPlan().toString().equals("FREE")) {
+			if ((workspace.getMemberCount() + 1) == 10) {
+				throw new WorkspaceMaxMemberCountReachedException("Workspace Max Member Count Reached For FREE plan");
+			} else {
 				workspace.addUser(user);
+				user.addWorkspace(workspace);
 				member.setMemberName(user.getUserName());
 				member.setMemberGmail(user.getGmail());
 				member.setMemberJoinDate(LocalDateTime.now());
 				workspace.addMember(member);
+			}
+		}
+		if (projects != null) {
+			for (Project project : projects) {
+				if (!project.getIsPrivate()) {
+					project.addMember(member);
+					member.addProject(project);
+				}
+			}
+		}
+		memberRepository.save(member);
+		projectRepository.saveAll(projects);
+		workspaceRepository.save(workspace);
+		userRepository.save(user);
+		joinWorkspaceRequestRepository.save(joinWorkspaceRequest);
+		emailUtility.sendEmail(joinWorkspaceRequest.getUser().getGmail(),
+				"Workspace " + joinWorkspaceRequest.getWorkspace().getWorkspaceName() + " Welcomes You",
+				"Your Request to Join Workspace has been Accepted!");
+		return "Your Request to Join Workspace has been Accepted!!";
+	}
+
+	@Transactional
+	public String acceptAllJoinRequest(String workspaceId) {
+		Workspace workspace = workspaceRepository.findById(workspaceId)
+				.orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+		List<JoinWorkspaceRequest> requests = workspace.getRequests();
+		Member admin = memberRepository
+				.findByMemberGmailAndWorkspaceId(workspace.getAdminGmail(), workspace.getWorkspaceId())
+				.orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		for (JoinWorkspaceRequest request : requests) {
+			if ("PENDING".equals(request.getStatus())) {
+				request.setStatus("APPROVED");
+				Member member = new Member();
+				User user = request.getUser();
+				if (admin.getPlan().equals("FREE")) {
+					if (workspace.getMemberCount() == 10) {
+						throw new WorkspaceMaxMemberCountReachedException(
+								"Workspace Max Member Count Reached For FREE plan");
+					} else {
+						user.addWorkspace(workspace);
+						workspace.addUser(user);
+						member.setMemberName(user.getUserName());
+						member.setMemberGmail(user.getGmail());
+						member.setMemberJoinDate(LocalDateTime.now());
+						workspace.addMember(member);
+					}
+				}
 				memberRepository.save(member);
 				joinWorkspaceRequestRepository.save(request);
-				emailUtility.sendEmail(request.getUser().getGmail(), "Workspace " + request.getWorkspace().getWorkspaceName() + " Welcomes You", "Your Request to Join Workspace has been Accepted!");
+				emailUtility.sendEmail(request.getUser().getGmail(),
+						"Workspace " + request.getWorkspace().getWorkspaceName() + " Welcomes You",
+						"Your Request to Join Workspace has been Accepted!");
 			}
 		}
 		workspaceRepository.save(workspace);
 		return "All the requests has been Approved";
 	}
-	
+
 	public String rejectSingleJoinRequest(String requestId) {
-		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId).orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
+		JoinWorkspaceRequest joinWorkspaceRequest = joinWorkspaceRequestRepository.findById(requestId)
+				.orElseThrow(() -> new JoinWorkspaceRequestNotFound("Workspace Join Request Not Found"));
 		joinWorkspaceRequest.setStatus("REJECTED");
 		joinWorkspaceRequestRepository.save(joinWorkspaceRequest);
-		emailUtility.sendEmail(joinWorkspaceRequest.getUser().getGmail(), "Workspace " + joinWorkspaceRequest.getWorkspace().getWorkspaceName() + " Join Request Rejected", "Sorry! But your request to join the workspace has been rejected.");
-		return "Your Request to Join Workspace has been Accepted. Workspace join link has been sent to your email!";
+		emailUtility.sendEmail(joinWorkspaceRequest.getUser().getGmail(),
+				"Workspace " + joinWorkspaceRequest.getWorkspace().getWorkspaceName() + " Join Request Rejected",
+				"Sorry! But your request to join the workspace has been rejected.");
+		return "Request to Join Workspace has been Rejected";
 	}
-	
+
 	public String rejectAllJoinRequest(String workspaceId) {
-		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
-		Set<JoinWorkspaceRequest> requests = workspace.getRequests();
-		for(JoinWorkspaceRequest request : requests) {
-			if("PENDING".equals(request.getStatus())) {
+		Workspace workspace = workspaceRepository.findById(workspaceId)
+				.orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+		List<JoinWorkspaceRequest> requests = workspace.getRequests();
+		for (JoinWorkspaceRequest request : requests) {
+			if ("PENDING".equals(request.getStatus())) {
 				request.setStatus("REJECTED");
-				emailUtility.sendEmail(request.getUser().getGmail(), "Workspace " + request.getWorkspace().getWorkspaceName() + " Join Request Rejected", "Sorry! But your request to join the workspace has been rejected.");
+				emailUtility.sendEmail(request.getUser().getGmail(),
+						"Workspace " + request.getWorkspace().getWorkspaceName() + " Join Request Rejected",
+						"Sorry! But your request to join the workspace has been rejected.");
 				joinWorkspaceRequestRepository.save(request);
 			}
 		}
 		workspaceRepository.save(workspace);
 		return "All the requests has been Approved";
 	}
-	
+
 	public String sendInviteLinkToMembers(String gmail, Workspace workspace) {
 		User user = userRepository.findByGmail(gmail).orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		String inviteLink = createInviteJoinLink(workspace, gmail);
-		emailUtility.sendEmail(user.getGmail(), "You are invited to Join Workspace " + workspace.getWorkspaceName(), "Join the workspace within 2 days from now via:" + inviteLink);
+		emailUtility.sendEmail(user.getGmail(), "You are invited to Join Workspace " + workspace.getWorkspaceName(),
+				"Join the workspace within 2 days from now via:" + inviteLink);
 		return "Workspace Invite Link has been sent to the Member";
 	}
-	
+
 	@Transactional
 	public String joinWorkspaceWithJoinCode(JoinWorkspaceRequestDto joinWorkspaceRequestDto) {
-		Workspace workspace = workspaceRepository.findByJoinCode(joinWorkspaceRequestDto.getJoinCode()).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found with the join code"));
-		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail()).orElseThrow(() -> new UserNotFoundException("User Not Found"));
+		Workspace workspace = workspaceRepository.findByJoinCode(joinWorkspaceRequestDto.getJoinCode())
+				.orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found with the join code"));
+		User user = userRepository.findByGmail(joinWorkspaceRequestDto.getGmail())
+				.orElseThrow(() -> new UserNotFoundException("User Not Found"));
 		workspace.addUser(user);
+		List<Project> projects = workspace.getProjects();
 		Member member = new Member();
-		member.setMemberName(user.getUserName());
-		member.setMemberGmail(user.getGmail());
-		member.setMemberJoinDate(LocalDateTime.now());
-		workspace.addMember(member);
+		Member admin = memberRepository
+				.findByMemberGmailAndWorkspaceId(workspace.getAdminGmail(), workspace.getWorkspaceId())
+				.orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
+		if (admin.getPlan().toString().equals("FREE")) {
+			if ((workspace.getMemberCount() + 1) == 10) {
+				throw new WorkspaceMaxMemberCountReachedException("Workspace Max Member Count Reached For FREE plan");
+			} else {
+				member.setMemberName(user.getUserName());
+				member.setMemberGmail(user.getGmail());
+				member.setMemberJoinDate(LocalDateTime.now());
+				workspace.addMember(member);
+			}
+		}
+		
+		if (projects != null) {
+			for (Project project : projects) {
+				if (!project.getIsPrivate()) {
+					project.addMember(member);
+					member.addProject(project);
+				}
+			}
+		}
 		memberRepository.save(member);
 		workspaceRepository.save(workspace);
 		user.addWorkspace(workspace);
 		userRepository.save(user);
 		return "User have joined the workspace";
 	}
-	
-	public Page<WorkspaceSummaryDto> getAllWorkspacesSummaryByUser(int page, int size, String gmail){
+
+	public Page<WorkspaceSummaryDto> getAllWorkspacesSummaryByUser(int page, int size, String gmail) {
 		Pageable pageable = PageRequest.of(page, size);
 		return workspaceRepository.findAllWorkspaceSummariesByUserGmail(gmail, pageable);
-		
+
 	}
-	
-	public Page<WorkspaceSummaryDto> searchWorkspaceByKeyword(int page, int size, String keyword){
+
+	public Page<WorkspaceSummaryDto> searchWorkspaceByKeyword(int page, int size, String keyword) {
 		Pageable pageable = PageRequest.of(page, size);
 		return workspaceRepository.findAllWorkspaceSummaryByKeyword(keyword, pageable);
 	}
-	
+
 	public String getWorkspaceJoinCodeByWorkspaceId(String workspaceId) {
-		Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
+		Workspace workspace = workspaceRepository.findById(workspaceId)
+				.orElseThrow(() -> new WorkspaceNotFoundException("Workspace Not Found"));
 		return workspace.getJoinCode();
 	}
-	
+
 }

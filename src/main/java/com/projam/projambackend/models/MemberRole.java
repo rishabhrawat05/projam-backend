@@ -1,6 +1,8 @@
 package com.projam.projambackend.models;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils;
@@ -31,13 +33,13 @@ public class MemberRole {
     private String roleColor;
 
     @ManyToMany(mappedBy = "memberRole")
-    private Set<Tag> tags;
+    private List<Tag> tags;
 
     @OneToMany(mappedBy = "memberRole", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Task> tasks;
+    private List<Task> tasks;
 
     @ManyToMany(mappedBy = "memberRoles")
-    private Set<Member> members = new HashSet<>();
+    private List<Member> members = new ArrayList<>();
     
     @ManyToOne  
     @JoinColumn(name = "project_id")  
@@ -98,27 +100,27 @@ public class MemberRole {
         this.roleName = roleName;
     }
 
-    public Set<Tag> getTags() {
+    public List<Tag> getTags() {
         return tags;
     }
 
-    public void setTags(Set<Tag> tags) {
+    public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
 
-    public Set<Task> getTasks() {
+    public List<Task> getTasks() {
         return tasks;
     }
 
-    public void setTasks(Set<Task> tasks) {
+    public void setTasks(List<Task> tasks) {
         this.tasks = tasks;
     }
 
-    public Set<Member> getMember() {
+    public List<Member> getMember() {
         return members;
     }
 
-    public void setMember(Set<Member> members) {
+    public void setMember(List<Member> members) {
         this.members = members;
     }
 
@@ -220,12 +222,12 @@ public class MemberRole {
 	}
 
 
-	public Set<Member> getMembers() {
+	public List<Member> getMembers() {
 		return members;
 	}
 
 
-	public void setMembers(Set<Member> members) {
+	public void setMembers(List<Member> members) {
 		this.members = members;
 	}
 

@@ -32,12 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
     	String path = request.getRequestURI();
-        
-
-        if (path.startsWith("/projam/github/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
     	
         String gmail = null;
         String token = null;
