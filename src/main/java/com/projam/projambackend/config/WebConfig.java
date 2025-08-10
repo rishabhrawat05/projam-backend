@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -43,6 +44,7 @@ public class WebConfig {
 		http.csrf(csrf -> csrf.disable()).cors(Customizer.withDefaults())
 				.authorizeHttpRequests(
 						auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 								.requestMatchers("/projam/auth/**", "/projam/github/link-installation",
 										"/projam/github/repos", "/projam/github/is-connected", "/projam/github/webhook",
 										"/projam/workspace/join/**", "/projam/project/join/**")
