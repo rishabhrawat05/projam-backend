@@ -47,6 +47,9 @@ public class GithubInstallationService {
 
 	@Value("${github.app.id}")
 	private String githubAppId;
+	
+	@Value("${github.private.key}")
+	private String GITHUB_PRIVATE_KEY;
 
 	public GithubInstallationService(GithubInstallationRepository githubInstallationRepository,
 			ProjectRepository projectRepository, WorkspaceRepository workspaceRepository,
@@ -58,18 +61,15 @@ public class GithubInstallationService {
 	}
 
 	public RSAPrivateKey loadPrivateKey() throws Exception {
-		InputStream inputStream = getClass().getClassLoader().getResourceAsStream("github-app-private-key-pkcs8.pem");
-		if (inputStream == null) {
-			throw new RuntimeException("Private key file not found in resources");
-		}
-
-		String content;
-		try (inputStream) {
-			content = new String(inputStream.readAllBytes());
-		}
-
-		content = content.replace("-----BEGIN PRIVATE KEY-----", "").replace("-----END PRIVATE KEY-----", "")
-				.replaceAll("\\s", "");
+		String privateKeyPem = GITHUB_PRIVATE_KEY;
+	    if (privateKeyPem == null) {
+	        throw new RuntimeException("GITHUB_PRIVATE_KEY env var not set");
+	    }
+	    
+	    String content = privateKeyPem
+	            .replace("-----BEGIN PRIVATE KEY-----", "")
+	            .replace("-----END PRIVATE KEY-----", "")
+	            .replaceAll("\\s", "");
 
 		byte[] keyBytes = Base64.getDecoder().decode(content);
 		PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
