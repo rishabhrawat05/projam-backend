@@ -3,6 +3,7 @@ package com.projam.projambackend.controllers;
 import java.security.Principal;
 import java.util.Base64;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,8 @@ import com.projam.projambackend.services.GithubInstallationService;
 @RequestMapping("/projam/github")
 public class GithubInstallationController {
 
+	@Value("${frontend.url}")
+	private String frontendUrl;
 
     private final GithubInstallationService githubInstallationService;
 
@@ -26,7 +29,7 @@ public class GithubInstallationController {
     @GetMapping("/callback")
     public RedirectView githubCallback(@RequestParam("installation_id") String installationId, @RequestParam("state") String state) throws Exception {
 
-    	String redirectUrl = "http://localhost:5173/github/callback?installation_id=" + installationId + "&state=" + state;
+    	String redirectUrl = frontendUrl + "/github/callback?installation_id=" + installationId + "&state=" + state;
         return new RedirectView(redirectUrl);
     }
     
