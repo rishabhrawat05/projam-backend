@@ -104,11 +104,11 @@ public class AuthenticationService {
 		String refreshToken = jwtHelper.generateRefreshToken(userDetails);
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
-		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(false).path("/")
-				.maxAge(60 * 60).sameSite("Strict").build();
+		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(true).path("/")
+				.maxAge(60 * 60).sameSite("None").build();
 
-		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
-				.path("/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(true)
+				.path("/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
 
 		response.addHeader("Set-Cookie", refreshCookie.toString());
 
@@ -283,11 +283,11 @@ public class AuthenticationService {
 		user.setRefreshToken(refreshToken);
 		userRepository.save(user);
 
-		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(false).path("/")
-				.maxAge(60 * 60).sameSite("Strict").build();
+		ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(true).path("/")
+				.maxAge(60 * 60).sameSite("None").build();
 
-		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
-				.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(true)
+				.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
 
 		response.addHeader("Set-Cookie", refreshCookie.toString());
 
@@ -401,13 +401,13 @@ public class AuthenticationService {
 			userResponse1.setGmail(email);
 			userResponse1.setUsername(username);
 
-			ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(false).path("/")
-					.maxAge(60 * 60).sameSite("Strict").build();
+			ResponseCookie cookie = ResponseCookie.from("token", token).httpOnly(true).secure(true).path("/")
+					.maxAge(60 * 60).sameSite("None").build();
 
 			response.addHeader("Set-Cookie", cookie.toString());
 
-			ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(false)
-					.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+			ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(true)
+					.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
 
 			response.addHeader("Set-Cookie", refreshCookie.toString());
 
@@ -449,10 +449,10 @@ public class AuthenticationService {
 	    userRepository.save(user);
 
 	    ResponseCookie accessCookie = ResponseCookie.from("token", newAccessToken)
-	            .httpOnly(true).secure(true).path("/").maxAge(60 * 60).sameSite("Strict").build();
+	            .httpOnly(true).secure(true).path("/").maxAge(60 * 60).sameSite("None").build();
 
 	    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-	            .httpOnly(true).secure(true).path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("Strict").build();
+	            .httpOnly(true).secure(true).path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
 
 	    response.addHeader("Set-Cookie", accessCookie.toString());
 	    response.addHeader("Set-Cookie", refreshCookie.toString());
@@ -485,12 +485,12 @@ public class AuthenticationService {
 	    ResponseCookie accessCookie = ResponseCookie.from("token", "")
 	            .httpOnly(true).secure(true)
 	            .path("/").maxAge(0)
-	            .sameSite("Strict").build();
+	            .sameSite("None").build();
 
 	    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
 	            .httpOnly(true).secure(true)
 	            .path("/projam/auth/token/refresh").maxAge(0)
-	            .sameSite("Strict").build();
+	            .sameSite("None").build();
 
 	    response.addHeader("Set-Cookie", accessCookie.toString());
 	    response.addHeader("Set-Cookie", refreshCookie.toString());
