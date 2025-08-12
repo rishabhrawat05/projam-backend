@@ -108,7 +108,7 @@ public class AuthenticationService {
 				.maxAge(60 * 60).sameSite("None").build();
 
 		ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken).httpOnly(true).secure(true)
-				.path("/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
+				.path("/projam/auth/token/refresh").maxAge(7 * 24 * 60 * 60).sameSite("None").build();
 
 		response.addHeader("Set-Cookie", refreshCookie.toString());
 
