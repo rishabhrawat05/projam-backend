@@ -138,9 +138,7 @@ public class AuthenticationService {
 		String encodedPassword = passwordEncoder.bCryptPasswordEncoder().encode(signupRequest.getPassword());
 		String otp = generateOtp();
 		Set<Role> roleSet = new HashSet<>();
-		Role role = new Role("FREE");
-
-		roleSet.add(role);
+		roleSet.add(getDefaultRole());
 		User user = new User();
 		user.setUsername(signupRequest.getUsername());
 		user.setGmail(signupRequest.getGmail());
@@ -149,7 +147,6 @@ public class AuthenticationService {
 		user.setRoles(roleSet);
 		user.setVerified(false);
 		user.setOtpGeneratedTime(LocalDateTime.now());
-		roleRepository.save(role);
 		userRepository.save(user);
 		emailUtility.sendEmail(signupRequest.getGmail(), "Otp Verification for ProJam",
 				"Otp for Verification is:" + otp);
@@ -262,12 +259,7 @@ public class AuthenticationService {
 			user.setVerified(true);
 			user.setPassword(NanoIdUtils.randomNanoId());
 			user.setOtpGeneratedTime(LocalDateTime.now());
-			Role role = roleRepository.findByRoleName("FREE").orElse(null);
-			if (role == null) {
-				role = new Role("FREE");
-				roleRepository.save(role);
-			}
-			user.getRoles().add(role);
+			user.getRoles().add(getDefaultRole());
 			userRepository.save(user);
 		}
 
@@ -381,7 +373,7 @@ public class AuthenticationService {
 				user.setVerified(true);
 				user.setPassword(NanoIdUtils.randomNanoId());
 				user.setOtpGeneratedTime(LocalDateTime.now());
-				user.getRoles().add(roleRepository.findByRoleName("FREE").orElseThrow());
+				user.getRoles().add(getDefaultRole());
 				userRepository.save(user);
 			}
 
@@ -496,6 +488,11 @@ public class AuthenticationService {
 	    response.addHeader("Set-Cookie", refreshCookie.toString());
 
 	    return "Logged out successfully";
+	}
+
+	private Role getDefaultRole() {
+	    return roleRepository.findByRoleName("FREE")
+	            .orElseGet(() -> roleRepository.save(new Role("FREE")));
 	}
 
 
