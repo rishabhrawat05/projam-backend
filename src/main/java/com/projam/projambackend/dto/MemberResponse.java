@@ -1,6 +1,7 @@
 package com.projam.projambackend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class MemberResponse {
 	
@@ -11,8 +12,8 @@ public class MemberResponse {
 	private LocalDateTime memberJoinDate;
 	
 	private String memberGmail;
-
 	
+	private List<String> roleName; 
 	
 	public String getMemberId() {
 		return memberId;
@@ -45,7 +46,25 @@ public class MemberResponse {
 	public void setMemberGmail(String memberGmail) {
 		this.memberGmail = memberGmail;
 	}
+	
+	
 
+	public List<String> getRoleName() {
+		return roleName;
+	}
+
+	public void setRoleName(List<String> roleName) {
+		this.roleName = roleName;
+	}
+
+	public MemberResponse(String memberId, String memberName, String memberGmail, LocalDateTime memberJoinDate, List<String> roleName) {
+		this.memberId = memberId;
+		this.memberName = memberName;
+		this.memberJoinDate = memberJoinDate;
+		this.memberGmail = memberGmail;
+		this.roleName = roleName;
+	}
+	
 	public MemberResponse(String memberId, String memberName, String memberGmail, LocalDateTime memberJoinDate) {
 		this.memberId = memberId;
 		this.memberName = memberName;

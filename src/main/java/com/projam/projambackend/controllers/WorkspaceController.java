@@ -107,4 +107,9 @@ public class WorkspaceController {
 	public ResponseEntity<?> rejectSingleJoinRequest(@RequestParam String requestId) {
 		return ResponseEntity.ok(workspaceService.rejectSingleJoinRequest(requestId));
 	}
+	
+	@GetMapping("/member/is-admin")
+	public ResponseEntity<Boolean> isWorkspaceMemberAdmin(@RequestParam String workspaceId, Principal principal){
+		return ResponseEntity.ok(workspaceService.isWorkspaceMemberAdmin(workspaceId, principal.getName()));
+	}
 }

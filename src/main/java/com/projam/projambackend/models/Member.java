@@ -1,6 +1,8 @@
 package com.projam.projambackend.models;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +36,7 @@ public class Member {
 	private String memberGmail;
 	
 	@ManyToMany(mappedBy = "members")
-	private List<Project> projects;
+	private List<Project> projects = new ArrayList<>();
 	
 	@OneToMany(mappedBy = "assignee",  cascade = CascadeType.ALL)
 	private List<Task> assignedTasks;
@@ -51,7 +53,7 @@ public class Member {
 	    joinColumns = @JoinColumn(name = "member_id"),
 	    inverseJoinColumns = @JoinColumn(name = "member_role_id")
 	)
-	private Set<MemberRole> memberRoles;
+	private Set<MemberRole> memberRoles = new HashSet<>();
 	
 	@Column(name = "request_status")
 	private String requestStatus;
@@ -113,14 +115,6 @@ public class Member {
 
 	public void setActivities(List<Activity> activities) {
 		this.activities = activities;
-	}
-
-	public Set<MemberRole> getMemberRole() {
-		return memberRoles;
-	}
-
-	public void setMemberRole(Set<MemberRole> memberRoles) {
-		this.memberRoles = memberRoles;
 	}
 
 	public Workspace getWorkspace() {

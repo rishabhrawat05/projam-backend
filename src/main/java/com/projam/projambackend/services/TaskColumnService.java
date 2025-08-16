@@ -49,7 +49,7 @@ public class TaskColumnService {
 		
 		Member member = memberRepository.findByMemberGmailAndProjectId(taskColumnRequest.getMemberGmail(), taskColumnRequest.getProjectId()).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 		
-		if(!member.getMemberRole().stream().anyMatch(role -> role.isCanCreateColumn())) {
+		if(!member.getMemberRoles().stream().anyMatch(role -> role.isCanCreateColumn())) {
 			throw new MemberNotAuthorizedException("Member Not Authorized to create a new column");
 		}
 		

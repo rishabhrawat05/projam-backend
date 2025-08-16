@@ -46,7 +46,7 @@ public class Project {
 		    joinColumns = @JoinColumn(name = "project_id"),
 		    inverseJoinColumns = @JoinColumn(name = "member_id")
 		)
-	private List<Member> members = new ArrayList<>(); ;
+	private List<Member> members = new ArrayList<>();
 	
 	@Column(name = "start_date")
 	private LocalDate startDate;

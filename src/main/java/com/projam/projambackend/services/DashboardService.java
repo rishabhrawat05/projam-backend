@@ -48,7 +48,7 @@ public class DashboardService {
 	public DashboardResponse getDashboard(String projectId, String email) {
 		Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 
-		boolean isAdmin = member.getMemberRole().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
+		boolean isAdmin = member.getMemberRoles().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
 
 		DashboardResponse response = buildCommonDashboard(projectId, email);
 		
@@ -76,7 +76,7 @@ public class DashboardService {
 			response.setTotalTask(taskRepository.countByProjectAndAssignedTo_memberGmail(project, email));
 		}
 
-		response.setUserRoles(member.getMemberRole().stream().map(MemberRole::getRoleName).collect(Collectors.toList()));
+		response.setUserRoles(member.getMemberRoles().stream().map(MemberRole::getRoleName).collect(Collectors.toList()));
 
 		return response;
 	}

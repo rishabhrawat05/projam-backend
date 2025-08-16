@@ -68,7 +68,7 @@ public class ProjectDeletionListener {
         // 2. Handle MemberRoles — delete after unlinking from tags/members
         for (MemberRole role : new ArrayList<>(project.getMemberRoles())) {
             for (Member member : new ArrayList<>(role.getMembers())) {
-                member.getMemberRole().remove(role);
+                member.getMemberRoles().remove(role);
             }
             role.getMembers().clear();
 

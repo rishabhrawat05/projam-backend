@@ -58,7 +58,7 @@ public class WeeklyProgressService {
 		Project project = projectRepository.findById(projectId).orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 		
-		boolean isAdmin = member.getMemberRole().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
+		boolean isAdmin = member.getMemberRoles().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
 		
 		int year = LocalDate.now().getYear();
 		int month =LocalDate.now().getMonthValue();
@@ -115,7 +115,7 @@ public class WeeklyProgressService {
 	@Transactional
 	public List<WeeklyProgressResponse> getWeeklyProgress(String projectId, String email) {
 		Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId).orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
-		boolean isAdmin = member.getMemberRole().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
+		boolean isAdmin = member.getMemberRoles().stream().anyMatch(role -> role.getRoleName().equals("ADMIN"));
 		if(isAdmin) {
 			return weeklyProgressRepository.findByProjectId(projectId);
 		}

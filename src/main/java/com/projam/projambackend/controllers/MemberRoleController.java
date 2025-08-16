@@ -38,8 +38,8 @@ public class MemberRoleController {
 	}
 	
 	@GetMapping("/get")
-	public List<MemberRoleResponse> getMemberRolebyProjectIdAndMemberGmail(@RequestParam String memberGmail, @RequestParam String projectId){
-		return memberRoleService.getMemberRoleByProjectIdAndMemberGmail(memberGmail, projectId);
+	public List<MemberRoleResponse> getMemberRolebyProjectIdAndMemberGmail(@RequestParam String projectId, Principal principal){
+		return memberRoleService.getMemberRoleByProjectIdAndMemberGmail(principal.getName(), projectId);
 	}
 	
 	@PutMapping("/update")

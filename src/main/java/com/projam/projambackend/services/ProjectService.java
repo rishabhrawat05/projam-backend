@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -64,6 +65,12 @@ public class ProjectService {
 	private final EmailUtility emailUtility;
 
 	private final AmqpTemplate amqpTemplate;
+	
+	@Value("${frontend.url}")
+	private String frontendUrl;
+	
+	@Value("${backend.url}")
+	private String backendUrl;
 
 	public ProjectService(ProjectRepository projectRepository, WorkspaceRepository workspaceRepository,
 			MemberRepository memberRepository, MemberRoleRepository memberRoleRepository,
@@ -142,7 +149,7 @@ public class ProjectService {
 		return projectToProjectResponse(project);
 	}
 
-	private MemberRole createMemberRoleWithPermissions(Member member, Project project, String roleName) {
+	public MemberRole createMemberRoleWithPermissions(Member member, Project project, String roleName) {
 		MemberRole memberRole = memberRoleRepository
 				.findByRoleNameAndProject_ProjectId(roleName, project.getProjectId()).orElse(null);
 
@@ -230,7 +237,7 @@ public class ProjectService {
 		joinToken.setEmail(gmail);
 		joinProjectTokenRepository.save(joinToken);
 
-		return "http://localhost:8080/projam/project/join/project/" + token;
+		return backendUrl + "/projam/project/join/project/" + token;
 	}
 
 	public RedirectView joinProjectWithInviteLink(String token) {
@@ -263,7 +270,7 @@ public class ProjectService {
 		projectRepository.save(project);
 		memberRepository.save(member);
 
-		return new RedirectView("http://localhost:5173/home/workspaces");
+		return new RedirectView(frontendUrl + "/home/workspaces");
 
 	}
 

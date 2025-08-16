@@ -104,7 +104,7 @@ public class MemberRoleService {
 	    Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId)
 	            .orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 
-	    boolean hasPermission = member.getMemberRole().stream()
+	    boolean hasPermission = member.getMemberRoles().stream()
 	            .anyMatch(role -> role.isCanManageRolesAndPermission());
 
 	    if (!hasPermission) {
@@ -143,7 +143,7 @@ public class MemberRoleService {
 	    Member member = memberRepository.findByMemberGmailAndProjectId(email, projectId)
 	            .orElseThrow(() -> new MemberNotFoundException("Member Not Found"));
 
-	    boolean hasPermission = member.getMemberRole().stream()
+	    boolean hasPermission = member.getMemberRoles().stream()
 	            .anyMatch(role -> role.isCanManageRolesAndPermission());
 
 	    if (!hasPermission) {
@@ -157,7 +157,7 @@ public class MemberRoleService {
 	    }
 	    List<Member> membersUsingRole = memberRepository.findByMemberRole_MemberRoleId(memberRoleId);
 	    for (Member member2 : membersUsingRole) {
-	        member2.getMemberRole().removeIf(role -> role.getMemberRoleId().equals(memberRoleId));
+	        member2.getMemberRoles().removeIf(role -> role.getMemberRoleId().equals(memberRoleId));
 	        memberRepository.save(member2);
 	    }
 

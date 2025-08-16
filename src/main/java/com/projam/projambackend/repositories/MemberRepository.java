@@ -74,7 +74,6 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 			    JOIN m.projects p
 			    WHERE w.workspaceId = :workspaceId
 				AND p.projectId <> :projectId
-			      AND m.requestStatus = 'WORKSPACE'
 			""")
 	List<MemberSummary> findAllMemberNameByWorkspaceId(@Param("workspaceId") String workspaceId,
 			@Param("projectId") String projectId);
@@ -85,4 +84,5 @@ public interface MemberRepository extends JpaRepository<Member, String> {
 			+ "OR LOWER(m.memberGmail) LIKE LOWER(CONCAT('%', :keyword, '%')))")
 	List<MemberResponse> getAllMembersByKeywordAndWorkspaceId(@Param("keyword") String keyword, @Param("workspaceId") String workspaceId);
 
+	Optional<Member> findByMemberGmail(String memberGmail);
 }

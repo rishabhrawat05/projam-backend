@@ -78,7 +78,7 @@ public class TaskService {
 				.findByMemberGmailAndProjectId(taskRequest.getAssignee().getMemberGmail(), projectId)
 				.orElseThrow(() -> new MemberNotFoundException("Assignee Member Not Found"));
 
-		if (!assigneeMember.getMemberRole().stream().anyMatch(role -> role.isCanCreateTask())) {
+		if (!assigneeMember.getMemberRoles().stream().anyMatch(role -> role.isCanCreateTask())) {
 			throw new MemberNotAuthorizedException("Member Not Authorized To Create Task");
 		}
 

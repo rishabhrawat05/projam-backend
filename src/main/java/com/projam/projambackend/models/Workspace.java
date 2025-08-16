@@ -58,10 +58,10 @@ public class Workspace {
 	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<JoinWorkspaceRequest> requests = new ArrayList<>();
 
-	@OneToMany(mappedBy = "workspace")
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Project> projects = new ArrayList<>();
 	
-	@OneToMany(mappedBy = "workspace")
+	@OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Member> members = new ArrayList<>();
 	
 	@Column(name = "member_count")
