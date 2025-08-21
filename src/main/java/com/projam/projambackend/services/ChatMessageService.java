@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import com.projam.projambackend.dto.ChatMessageRequest;
+import com.projam.projambackend.dto.ChatMessageResponse;
 import com.projam.projambackend.exceptions.ProjectNotFoundException;
 import com.projam.projambackend.models.ChatMessage;
 import com.projam.projambackend.models.Project;
@@ -27,20 +28,34 @@ public class ChatMessageService {
 		this.messagingTemplate = messagingTemplate;
 	}
 	
-	public void handleChat(ChatMessageRequest chatMessageRequest) {
+	public void handleChat(ChatMessageRequest chatMessageRequest, String senderEmail) {
 		ChatMessage chatMessage = new ChatMessage();
 		Project project = projectRepository.findById(chatMessageRequest.getProjectId()).orElseThrow(() -> new ProjectNotFoundException("Project Not Found"));
 		chatMessage.setContent(chatMessageRequest.getContent());
 		chatMessage.setProject(project);
 		chatMessage.setReceiver(chatMessageRequest.getReceiver());
-		chatMessage.setSender(chatMessageRequest.getSender());
+		chatMessage.setSender(senderEmail);
 		chatMessage.setTimestamp(LocalDateTime.now());
 		chatMessageRepository.save(chatMessage);
 		
+		ChatMessageResponse chatResponse = chatMessageToChatMessageResponse(chatMessage);
+
 		messagingTemplate.convertAndSendToUser(
 	            chatMessage.getReceiver(),
 	            "/queue/messages", 
-	            chatMessage
+	            chatResponse
 	        );
+		
+		messagingTemplate.convertAndSendToUser(
+	            senderEmail,
+	            "/queue/messages", 
+	            chatResponse
+	        );
+
+	}
+	
+	public ChatMessageResponse chatMessageToChatMessageResponse(ChatMessage chatMessage) {
+		ChatMessageResponse chatResponse  = new ChatMessageResponse(chatMessage.getChatId(), chatMessage.getSender(), chatMessage.getReceiver(), chatMessage.getContent(), chatMessage.getTimestamp());
+		return chatResponse;
 	}
 }
