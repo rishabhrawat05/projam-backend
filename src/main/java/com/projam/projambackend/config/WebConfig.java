@@ -40,14 +40,16 @@ public class WebConfig {
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 		http.csrf(csrf -> csrf.disable())
+		 .cors(Customizer.withDefaults())
 				.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers("/projam/auth/**", "/projam/github/link-installation", "/projam/github/repos",
 								"/projam/github/is-connected", "/projam/github/webhook", "/projam/workspace/join/**",
 								"/projam/project/join/**")
 						.permitAll().anyRequest().authenticated())
 				.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-				.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+				.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
+				
 		return http.build();
 	}
 
