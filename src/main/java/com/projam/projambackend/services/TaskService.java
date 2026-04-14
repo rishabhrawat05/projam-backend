@@ -12,7 +12,13 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+
 import com.projam.projambackend.dto.MemberResponse;
 import com.projam.projambackend.dto.TagRequest;
 import com.projam.projambackend.dto.TagResponse;
@@ -55,15 +61,18 @@ public class TaskService {
 
 	private final TaskColumnRepository taskColumnRepository;
 
+	private final GithubInstallationService githubInstallationService;
+
 	public TaskService(TaskRepository taskRepository, ProjectRepository projectRepository,
 			ActivityRepository activityRepository, MemberRepository memberRepository, TagRepository tagRepository,
-			TaskColumnRepository taskColumnRepository) {
+			TaskColumnRepository taskColumnRepository, GithubInstallationService githubInstallationService) {
 		this.taskRepository = taskRepository;
 		this.projectRepository = projectRepository;
 		this.activityRepository = activityRepository;
 		this.memberRepository = memberRepository;
 		this.tagRepository = tagRepository;
 		this.taskColumnRepository = taskColumnRepository;
+		this.githubInstallationService = githubInstallationService;
 	}
 
 	@Transactional
@@ -129,6 +138,9 @@ public class TaskService {
 		activity.setTask(task);
 		activity.setMember(assigneeMember);
 		activityRepository.save(activity);
+		if(taskRequest.getCreateGithubIssue()) {
+			createGithubIssue(task);
+		}
 
 		if (taskRepository.countByProject(project) >= 1) {
 			project.setProjectStatus(ProjectStatus.IN_PROGRESS);
@@ -249,66 +261,83 @@ public class TaskService {
 	}
 
 	public List<TaskResponse> getTaskByQuery(String projectId, TaskSearchRequest taskSearchRequest) {
-	    Integer priority = null;
-	    LocalDate due = null;
-	    LocalDate dueStart = null;
-	    LocalDate dueEnd = null;
+		Integer priority = null;
+		LocalDate due = null;
+		LocalDate dueStart = null;
+		LocalDate dueEnd = null;
 
-	    if (taskSearchRequest.getPriority() != null) {
-	        priority = switch (taskSearchRequest.getPriority()) {
-	            case "critical" -> 1;
-	            case "high" -> 2;
-	            case "medium" -> 3;
-	            case "low" -> 4;
-	            default -> null;
-	        };
-	    }
+		if (taskSearchRequest.getPriority() != null) {
+			priority = switch (taskSearchRequest.getPriority()) {
+			case "critical" -> 1;
+			case "high" -> 2;
+			case "medium" -> 3;
+			case "low" -> 4;
+			default -> null;
+			};
+		}
 
-	    if (taskSearchRequest.getDue() != null) {
-	        switch (taskSearchRequest.getDue()) {
-	            case "today" -> due = LocalDate.now();
-	            case "tomorrow" -> due = LocalDate.now().plusDays(1);
-	            case "next week" -> due = LocalDate.now().plusWeeks(1);
-	            case "next month" -> {
-	                LocalDate now = LocalDate.now();
-	                dueStart = now.plusMonths(1).withDayOfMonth(1);
-	                dueEnd = dueStart.plusMonths(1).minusDays(1);
-	            }
-	        }
-	    }
+		if (taskSearchRequest.getDue() != null) {
+			switch (taskSearchRequest.getDue()) {
+			case "today" -> due = LocalDate.now();
+			case "tomorrow" -> due = LocalDate.now().plusDays(1);
+			case "next week" -> due = LocalDate.now().plusWeeks(1);
+			case "next month" -> {
+				LocalDate now = LocalDate.now();
+				dueStart = now.plusMonths(1).withDayOfMonth(1);
+				dueEnd = dueStart.plusMonths(1).minusDays(1);
+			}
+			}
+		}
 
-	    List<String> tags = taskSearchRequest.getTags();
-	    if (tags != null && tags.isEmpty()) {
-	        tags = null;
-	    }
+		List<String> tags = taskSearchRequest.getTags();
+		if (tags != null && tags.isEmpty()) {
+			tags = null;
+		}
 
-	    List<Task> tasks = taskRepository.findTaskCardsByQuery(
-	        projectId,
-	        taskSearchRequest.getMemberName(),
-	        due,
-	        dueStart,
-	        dueEnd,
-	        taskSearchRequest.getTitle(),
-	        priority,
-	        taskSearchRequest.getStatus(),
-	        tags
-	    );
+		List<Task> tasks = taskRepository.findTaskCardsByQuery(projectId, taskSearchRequest.getMemberName(), due,
+				dueStart, dueEnd, taskSearchRequest.getTitle(), priority, taskSearchRequest.getStatus(), tags);
 
-	    return tasks.stream()
-	        .map(task -> new TaskResponse(
-	            task.getTitle(),
-	            task.getTaskId(),
-	            task.getTaskColumn().getTaskColumnId(),
-	            task.getTaskKey(),
-	            task.getEndDate(),
-	            task.getPriority(),
-	            task.getTags().stream().map(Tag::getTitle).collect(Collectors.toList())
-	        ))
-	        .collect(Collectors.toList());
+		return tasks.stream()
+				.map(task -> new TaskResponse(task.getTitle(), task.getTaskId(), task.getTaskColumn().getTaskColumnId(),
+						task.getTaskKey(), task.getEndDate(), task.getPriority(),
+						task.getTags().stream().map(Tag::getTitle).collect(Collectors.toList())))
+				.collect(Collectors.toList());
 	}
-	
+
 	public Long getCountByTaskColumnIdAndProjectId(String projectId, String taskColumnId) {
 		return taskRepository.countByProjectIdAndTaskColumnId(projectId, taskColumnId);
+	}
+
+	public void createGithubIssue(Task task) {
+		boolean canCreateGithubIssue = task.getAssignee().getMemberRoles().stream()
+				.anyMatch(role -> role.isCanManageGithub());
+		RestTemplate restTemplate = new RestTemplate();
+		if (!canCreateGithubIssue) {
+			throw new MemberNotAuthorizedException("Member Not Authorized to create github Issue");
+		}
+		try {
+			String accessToken = githubInstallationService
+					.refreshAccessToken(task.getProject().getGithubInstallation());
+			HttpHeaders header = new HttpHeaders();
+			header.setBearerAuth(accessToken);
+			header.set("Accept", "application/vnd.github+json");
+			Map<String, Object> issueData = new HashMap<>();
+			issueData.put("title", task.getTaskKey() + ": " + task.getTitle());
+			issueData.put("body", "Linked ProJamm task: " + task.getTaskKey() + "\n\n" + task.getDescription());
+			issueData.put("labels", task.getTags().stream().map(Tag::getTitle).toList());
+			HttpEntity<Map<String, Object>> entity = new HttpEntity<>(issueData, header);
+			String owner = task.getProject().getLinkedRepoOwner();
+	        String repo = task.getProject().getLinkedRepoName();  
+	        ResponseEntity<Map> response = restTemplate.exchange(
+	                "https://api.github.com/repos/" + owner + "/" + repo + "/issues",
+	                HttpMethod.POST,
+	                entity,
+	                Map.class
+	        );
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
 	}
 
 }

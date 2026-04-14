@@ -1,5 +1,6 @@
 package com.projam.projambackend.controllers;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class DashboardController {
 	}
 
 	@GetMapping("/get-dashboard")
+	@Cacheable(key = "#projectId + '_' + #email", value = "dashboard")
 	public ResponseEntity<?> getDashboard(@RequestParam String projectId, @RequestParam String email){
 		return ResponseEntity.ok(dashboardService.getDashboard(projectId, email));
 	}

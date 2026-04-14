@@ -45,12 +45,6 @@ public class ChatMessageService {
 	            "/queue/messages", 
 	            chatResponse
 	        );
-		
-		messagingTemplate.convertAndSendToUser(
-	            senderEmail,
-	            "/queue/messages", 
-	            chatResponse
-	        );
 
 	}
 	

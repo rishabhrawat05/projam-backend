@@ -97,6 +97,7 @@ public class AuthenticationService {
 		if (!user.getAuthProviders().contains("PASSWORD")) {
 			user.getAuthProviders().add("PASSWORD");
 			userRepository.save(user);
+			
 		}
 
 		UserDetails userDetails = userDetailsService.loadUserByUsername(loginRequest.getGmail());
@@ -147,6 +148,8 @@ public class AuthenticationService {
 		user.setRoles(roleSet);
 		user.setVerified(false);
 		user.setOtpGeneratedTime(LocalDateTime.now());
+		user.setAuthProviders(new HashSet<>());
+		user.getAuthProviders().add("PASSWORD");
 		userRepository.save(user);
 		emailUtility.sendEmail(signupRequest.getGmail(), "Otp Verification for ProJam",
 				"Otp for Verification is:" + otp);

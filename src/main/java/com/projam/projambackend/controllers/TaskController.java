@@ -2,6 +2,7 @@ package com.projam.projambackend.controllers;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +34,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("/get")
+	@Cacheable(value = "tasks", key = "#projectId + '_' + #page + '_' + #size", condition = "#size <= 50", unless = "#result == null || result.isEmpty()")
 	public Page<TaskResponse> getAllTaskByProject(@RequestParam String projectId, @RequestParam int page, @RequestParam int size){
 		return taskService.getAllTasksByProjectId(projectId, page, size);
 	}
@@ -73,6 +75,7 @@ public class TaskController {
 	}
 	
 	@GetMapping("/get/count")
+	@Cacheable(key = "#projectId + '_' + #taskColumnId", value = "taskCount")
 	public ResponseEntity<Long> getTaskCountByTaskColumnIdAndProjectId(@RequestParam String projectId, @RequestParam String taskColumnId){
 		return ResponseEntity.ok(taskService.getCountByTaskColumnIdAndProjectId(projectId, taskColumnId));
 	}

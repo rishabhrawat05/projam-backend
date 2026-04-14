@@ -1,6 +1,5 @@
 package com.projam.projambackend.services;
 
-import java.io.InputStream;
 import java.security.KeyFactory;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -78,10 +77,15 @@ public class GithubInstallationService {
 
 	public String generateGitHubAppJWT() throws Exception {
 		RSAPrivateKey privateKey = loadPrivateKey();
-		long now = System.currentTimeMillis();
+		long now = Instant.now().getEpochSecond();
+        long exp = now + 540; 
 
-		return Jwts.builder().setIssuer(githubAppId).setIssuedAt(new Date(now)).setExpiration(new Date(now + 600_000))
-				.signWith(privateKey, SignatureAlgorithm.RS256).compact();
+        return Jwts.builder()
+                .setIssuedAt(new Date(now * 1000))
+                .setExpiration(new Date(exp * 1000))
+                .setIssuer(githubAppId)
+                .signWith(privateKey, SignatureAlgorithm.RS256)
+                .compact();
 	}
 
 	@Transactional
@@ -116,7 +120,7 @@ public class GithubInstallationService {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setBearerAuth(jwt);
 		headers.set("Accept", "application/vnd.github+json");
-		headers.set("User-Agent", "ProJamm");
+		headers.set("User-Agent", "ProJammStage");
 		headers.set("X-GitHub-Api-Version", "2022-11-28");
 		HttpEntity<Void> entity = new HttpEntity<>(headers);
 		System.out.println(headers);

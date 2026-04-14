@@ -2,6 +2,7 @@ package com.projam.projambackend.controllers;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,6 +31,7 @@ public class TaskColumnController {
 	}
 	
 	@GetMapping("/get")
+	@Cacheable(value = "taskColumns", key = "#projectId")
 	public List<TaskColumnResponse> getAllTaskColumnByProjectId(@RequestParam String projectId){
 		return taskColumnService.getAllTaskColumnByProjectId(projectId);
 	}

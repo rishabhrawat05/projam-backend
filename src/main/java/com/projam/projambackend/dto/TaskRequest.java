@@ -2,7 +2,6 @@ package com.projam.projambackend.dto;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 
 public class TaskRequest {
 
@@ -25,6 +24,8 @@ public class TaskRequest {
 	private String taskColumnSlug;
 	
 	private Integer priority;
+	
+	private Boolean createGithubIssue;
 	
 	public String getTitle() {
 		return title;
@@ -107,6 +108,15 @@ public class TaskRequest {
 	public void setPriority(Integer priority) {
 		this.priority = priority;
 	}
+
+	public Boolean getCreateGithubIssue() {
+		return createGithubIssue;
+	}
+
+	public void setCreateGithubIssue(Boolean createGithubIssue) {
+		this.createGithubIssue = createGithubIssue;
+	}
+	
 	
 	
 	

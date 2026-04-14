@@ -20,6 +20,7 @@ public class ChatMessageController {
 
     @MessageMapping("/chat")
     public void handleChat(@Payload ChatMessageRequest message, Principal principal) {
+
        chatMessageService.handleChat(message, principal.getName());
     }
 }
